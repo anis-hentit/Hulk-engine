@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2042
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Imgui", "Vendor\Imgui\Imgui.vcxproj", "{81D6F890-3265-4641-87EE-37DEFE343206}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Hulk", "Hulk\Hulk.vcxproj", "{95CC4317-9FD1-446E-84CF-2D77A72B2244}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81D6F890-3265-4641-87EE-37DEFE343206} = {81D6F890-3265-4641-87EE-37DEFE343206}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SandBox", "SandBox\SandBox.vcxproj", "{CA70F7AB-4712-4DB5-900D-258822E254EB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244} = {95CC4317-9FD1-446E-84CF-2D77A72B2244}
+		{81D6F890-3265-4641-87EE-37DEFE343206} = {81D6F890-3265-4641-87EE-37DEFE343206}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{81D6F890-3265-4641-87EE-37DEFE343206}.Debug|x64.ActiveCfg = Debug|x64
+		{81D6F890-3265-4641-87EE-37DEFE343206}.Debug|x64.Build.0 = Debug|x64
+		{81D6F890-3265-4641-87EE-37DEFE343206}.Debug|x86.ActiveCfg = Debug|x64
+		{81D6F890-3265-4641-87EE-37DEFE343206}.Release|x64.ActiveCfg = Debug|x64
+		{81D6F890-3265-4641-87EE-37DEFE343206}.Release|x64.Build.0 = Debug|x64
+		{81D6F890-3265-4641-87EE-37DEFE343206}.Release|x86.ActiveCfg = Release|x64
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Debug|x64.ActiveCfg = Debug|x64
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Debug|x64.Build.0 = Debug|x64
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Debug|x86.ActiveCfg = Debug|Win32
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Debug|x86.Build.0 = Debug|Win32
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Release|x64.ActiveCfg = Debug|x64
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Release|x64.Build.0 = Debug|x64
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Release|x86.ActiveCfg = Release|Win32
+		{95CC4317-9FD1-446E-84CF-2D77A72B2244}.Release|x86.Build.0 = Release|Win32
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Debug|x64.ActiveCfg = Debug|x64
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Debug|x64.Build.0 = Debug|x64
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Debug|x86.ActiveCfg = Debug|Win32
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Debug|x86.Build.0 = Debug|Win32
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Release|x64.ActiveCfg = Debug|x64
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Release|x64.Build.0 = Debug|x64
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Release|x86.ActiveCfg = Release|Win32
+		{CA70F7AB-4712-4DB5-900D-258822E254EB}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3D8E66F2-BF81-4533-A9D2-15DFAD8D4D68}
+	EndGlobalSection
+EndGlobal

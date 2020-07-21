@@ -1,0 +1,110 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Integration">
+      <UniqueIdentifier>{7a2a8df4-e8b5-4e79-8b7c-65d039fe6999}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{cfc9ae03-5410-4073-9b17-277070aec6cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk">
+      <UniqueIdentifier>{5b313af0-6bd7-46ae-979e-b1c5d10037da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk\src">
+      <UniqueIdentifier>{46cc9e98-b51c-49f9-bde1-f34d2386b250}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk\src\Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Hulk\src\Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Hulk\Sol">
+      <UniqueIdentifier>{e394231b-9ada-475b-a05d-1bba12fcc2b8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk\Entry point">
+      <UniqueIdentifier>{0f617512-0683-4341-9e1b-5db5d9767b4e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="includes\d3dApp.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="includes\d3dUtil.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="includes\DDSTextureLoader.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="includes\FrameResource.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="includes\GameTimer.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="includes\GeometryGenerator.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="includes\MathHelper.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Hulk.h">
+      <Filter>Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\d3dApp.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\d3dUtil.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\DDSTextureLoader.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\FrameResource.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\GameTimer.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\GeometryGenerator.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\Instrumentor.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\MathHelper.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\UploadBuffer.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core.h">
+      <Filter>Hulk\src</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\forward.hpp">
+      <Filter>Hulk\Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="includes\sol.hpp">
+      <Filter>Hulk\Sol</Filter>
+    </ClInclude>
+    <ClInclude Include="EntryPoint.h">
+      <Filter>Hulk\Entry point</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="..\Shaders\color.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\LightingUtil.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
