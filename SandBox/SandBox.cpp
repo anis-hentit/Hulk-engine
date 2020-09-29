@@ -19,8 +19,8 @@ using namespace DirectX::PackedVector;
 using namespace Hulk;
 
 
-  extern const int gNumFrameResources ;
-  
+ 
+
 // Lightweight structure stores parameters to draw a shape.  This will
 // vary from app-to-app.
 struct RenderItem
@@ -194,6 +194,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	}
 }
 
+void Hulk::CreateApplication()
+{
+	WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
+}
+
 
 
 int SandBox::Run()
@@ -236,10 +241,7 @@ int SandBox::Run()
 	return (int)msg.wParam;
 }
 
-void Hulk::CreateApplication()
-{
-	WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
-}
+
 SandBox::SandBox(HINSTANCE hInstance)
 	: D3DApp(hInstance)
 {
@@ -262,8 +264,6 @@ bool SandBox::Initialize()
 	//Reset the command list to prep for initialization commands
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 	
-
-	
 	BuildTextures();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
@@ -274,7 +274,7 @@ bool SandBox::Initialize()
 	BuildFrameResources();
 	BuildDescriptorHeaps();//at this moment used for srvs for textures and one last srv for imgui
 	BuildShaderResourcesViews();
-	//BuildSamplerViews();
+	//BuildSamplerViews(); using static samplers
 	BuildPSO();
 	//Execute the init commands
 	ThrowIfFailed(mCommandList->Close());
@@ -284,12 +284,12 @@ bool SandBox::Initialize()
 	//Wait until init is complete
 	FlushCommandQueue();
 	
-
 	ImGuiInitialize(mhMainWnd,md3dDevice.Get(), gNumFrameResources,
 		mBackBufferFormat);
 	
 	return true;
 }
+
 
 void SandBox::OnResize()
 {
@@ -366,8 +366,9 @@ void SandBox::BuildMaterials()
 	tile0->DiffuseAlbedo = XMFLOAT4(Colors::LightGray);
 	tile0->FresnelR0 = XMFLOAT3(0.02f, 0.02f, 0.02f);
 	tile0->Roughness = 0.2f;
-
-		auto stoneMat = std::make_unique<Material>();
+	//XMStoreFloat4x4(&tile0->MatTransform, XMMatrixScaling(2.0f, 2.0f, 1.0f)); can transform text with matTransform matrix too
+	
+	 auto stoneMat = std::make_unique<Material>();
 	 stoneMat ->Name = "stone";
 	 stoneMat ->MatCBIndex = 2;
 	 stoneMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(stoneMat->Name)));
@@ -395,7 +396,7 @@ void SandBox::BuildTextures()
 {
 	auto floorTileText = std::make_unique<Texture>();
 	floorTileText->Name = "Tile";
-	floorTileText->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\neta.dds";
+	floorTileText->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\tile.dds";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(), mCommandList.Get(),
 		floorTileText->Filename.c_str(), floorTileText->Resource, floorTileText->UploadHeap
 	));
@@ -412,30 +413,15 @@ void SandBox::BuildTextures()
 
 	auto stoneTex = std::make_unique<Texture>();
 	stoneTex->Name = "stone";
-	stoneTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\neta.dds";
+	stoneTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\stone.dds";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), stoneTex->Filename.c_str(),
 		stoneTex->Resource, stoneTex->UploadHeap));
 
 	mTextures[stoneTex->Name] = std::move(stoneTex);
 
-	auto grethaTex = std::make_unique<Texture>();
-	grethaTex->Name = "gretha";
-	grethaTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\gretha.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-		mCommandList.Get(), grethaTex->Filename.c_str(),
-		grethaTex->Resource, grethaTex->UploadHeap));
-
-	mTextures[grethaTex->Name] = std::move(grethaTex);
 	
-	/*auto makTex = std::make_unique<Texture>();
-	makTex->Name = "makTex";
-	makTex->Filename = L"..\\Textures\\gretha.dds";
-	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
-		mCommandList.Get(), makTex->Filename.c_str(),
-		makTex->Resource, makTex->UploadHeap));
 	
-		mTextures[makTex->Name] = std::move(makTex);*/
 	
 	if (mTextures.size() > 0)//check if there is textures so i can offset imgui srv in the heap 
 		imguiDescriptorOffset = mTextures.size();
@@ -876,7 +862,7 @@ void SandBox::BuildRenderItems()
 	//Grid Render Item
 	auto gridRitem = std::make_unique<RenderItem>();
 	gridRitem->World = MathHelper::Identity4x4();
-	XMStoreFloat4x4(&gridRitem->TexTransform, XMMatrixScaling(8.0f, 8.0f, 1.0f));
+	XMStoreFloat4x4(&gridRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
 	gridRitem->ObjCBIndex = 2;
 	gridRitem->Geo = mGeometries["shapeGeo"].get();
 	gridRitem->mMaterial = mMaterials["tile"].get();

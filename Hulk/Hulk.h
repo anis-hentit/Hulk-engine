@@ -13,5 +13,6 @@
 #include "includes/Instrumentor.h"
 #include"includes/UploadBuffer.h"
 #include "Core.h"
+#include "includes/sol.hpp"
 #include"includes/d3dApp.h"
 #include "EntryPoint.h"

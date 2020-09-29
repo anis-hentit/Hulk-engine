@@ -86,8 +86,8 @@ VertexOut VS(VertexIn vin)
 	float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
 	
 	vout.PosW = posW.xyz; // get the world pos for eye-point distance calculation
-
-	// Assumes uniform scaling; otherwise, need to use inverse-transpose of world matrix.( just need to transpose it without the translation part because the rot matrix and scale matrix are orthogonal
+    //normals are vectors so they are not affected by translation
+	// Assumes uniform scaling; otherwise, need to use inverse-transpose of world matrix.( just need to transpose it without the translation part (from 4x4 to 3x3) because the rot matrix and scale matrix are orthogonal
 	                                                                                     //if not we zero out the translation part before multiplying by the view and rot matrices) the inverse of an orthogonal matrix is its transposed self
 	vout.NormalW = mul(vin.NormalL,(float3x3)gWorld);
 	

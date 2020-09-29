@@ -8,11 +8,9 @@ extern void Hulk::CreateApplication();
 int main(int argc,char** argv)
 {
 	//entry point
-
-	
 	Hulk::CreateApplication();
 	
-	
+
 	return 0;
 }
 
