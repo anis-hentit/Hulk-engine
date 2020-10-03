@@ -287,7 +287,7 @@ bool SandBox::Initialize()
 	ImGuiInitialize(mhMainWnd,md3dDevice.Get(), gNumFrameResources,
 		mBackBufferFormat);
 	
-	HK_INFO("Initialized Log!");
+	HK_INFO("Initialized APP!");
 	
 	return true;
 }

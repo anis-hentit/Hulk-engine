@@ -8,6 +8,7 @@
 #include <WindowsX.h>
 #include "Instrumentor.h"
 #include "../Log.h"
+#include"stdlib.h"
 
 
 using Microsoft::WRL::ComPtr;
@@ -144,14 +145,14 @@ int D3DApp::Run()
 bool D3DApp::Initialize()
 {
 	Hulk::Log::Init();
-	HK_CORE_WARN("Initialized Log!");
+	HK_CORE_INFO("Initialized Log!");
 	
 	if(!InitMainWindow())
 		return false;
-
+	HK_CORE_INFO("Initialized Main Window!");
 	if(!InitDirect3D())
 		return false;
-
+	HK_CORE_INFO("Initialized Direct3D!");
     // Do the initial resize code.
      OnResize();
 
@@ -176,6 +177,7 @@ void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 	dsvHeapDesc.NodeMask = 0;
     ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
         &dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
+	HK_CORE_INFO("Created rtv and dsv heaps!");
 }
 
 void D3DApp::OnResize()
@@ -620,7 +622,8 @@ void D3DApp::CreateCommandObjects()
 	// to the command list we will Reset it, and it needs to be closed before
 	// calling Reset.
 	mCommandList->Close();
-	
+
+	HK_CORE_INFO("Created command queue,command allocator and command list!");
 }
 
 void D3DApp::CreateSwapChain()
@@ -651,6 +654,8 @@ void D3DApp::CreateSwapChain()
 		mCommandQueue.Get(),
 		&sd, 
 		mSwapChain.GetAddressOf()));
+	
+	HK_CORE_INFO("Created Swap chain!");
 }
 
 void D3DApp::FlushCommandQueue()
@@ -742,6 +747,16 @@ void D3DApp::LogAdapters()
         text += L"\n";
 
         OutputDebugString(text.c_str());
+    	
+    	auto input =text.c_str();
+    	size_t size = (wcslen(input) + 1) * sizeof(wchar_t);
+		char *buffer = new char[size];
+    	
+		std::wcstombs(buffer, input, size);
+		
+    	 HK_CORE_INFO(buffer);
+
+	delete[] buffer;
 
         adapterList.push_back(adapter);
         
@@ -768,7 +783,17 @@ void D3DApp::LogAdapterOutputs(IDXGIAdapter* adapter)
         text += desc.DeviceName;
         text += L"\n";
         OutputDebugString(text.c_str());
+    	
+		auto input =text.c_str();
+    	size_t size = (wcslen(input) + 1) * sizeof(wchar_t);
+		char *buffer = new char[size];
+    	
+		std::wcstombs(buffer, input, size);
+		
+    	 HK_CORE_INFO(buffer);
 
+	delete[] buffer;
+    	
         LogOutputDisplayModes(output, mBackBufferFormat);
 
         ReleaseCom(output);
@@ -797,8 +822,13 @@ void D3DApp::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
             L"Height = " + std::to_wstring(x.Height) + L" " +
             L"Refresh = " + std::to_wstring(n) + L"/" + std::to_wstring(d) +
             L"\n";
-
+    	
+		
         ::OutputDebugString(text.c_str());
+
+    	
+    	
+    	
     }
 }
 }
