@@ -15,7 +15,6 @@
 #include "d3dUtil.h"
 #include "GameTimer.h"
 #include "../Core.h"
-#include "../Vendor/Sol/sol.hpp"
 // Link necessary d3d12 libraries.
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")

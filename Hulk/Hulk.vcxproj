@@ -75,13 +75,19 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files\Lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Program Files\Lua\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Program Files\Lua\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\Lua\include;E:\Desktop\Hulk engine\Hulk\includes;E:\Desktop\Hulk engine\Shaders;E:\Desktop\Hulk engine\Textures;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Lua\include;$(SolutionDir)Hulk\Vendor\spdlog\include;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>HK_PLATFORM_WINDOWS;HK_BUILD_DLL;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -100,6 +106,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files\Lua\include;$(SolutionDir)Hulk\Vendor\spdlog\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -113,6 +120,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>C:\Program Files\Lua\include;$(SolutionDir)Hulk\Vendor\spdlog\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,7 +136,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\Lua\include;E:\Desktop\Hulk engine\Hulk\includes;E:\Desktop\Hulk engine\Shaders;E:\Desktop\Hulk engine\Textures;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\Lua\include;$(SolutionDir)Hulk\Vendor\spdlog\include;</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PreprocessorDefinitions>HK_PLATFORM_WINDOWS;HK_BUILD_DLL;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
@@ -159,6 +167,7 @@
     <ClInclude Include="includes\Instrumentor.h" />
     <ClInclude Include="includes\MathHelper.h" />
     <ClInclude Include="includes\UploadBuffer.h" />
+    <ClInclude Include="Log.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="includes\d3dApp.cpp" />
@@ -168,6 +177,7 @@
     <ClCompile Include="includes\GameTimer.cpp" />
     <ClCompile Include="includes\GeometryGenerator.cpp" />
     <ClCompile Include="includes\MathHelper.cpp" />
+    <ClCompile Include="Log.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">

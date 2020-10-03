@@ -7,6 +7,7 @@
 #include <iostream>
 #include <WindowsX.h>
 #include "Instrumentor.h"
+#include "../Log.h"
 
 
 using Microsoft::WRL::ComPtr;
@@ -142,6 +143,9 @@ int D3DApp::Run()
 
 bool D3DApp::Initialize()
 {
+	Hulk::Log::Init();
+	HK_CORE_WARN("Initialized Log!");
+	
 	if(!InitMainWindow())
 		return false;
 

@@ -51,6 +51,9 @@
     <ClCompile Include="includes\MathHelper.cpp">
       <Filter>Hulk\src\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Hulk.h">
@@ -88,6 +91,9 @@
     </ClInclude>
     <ClInclude Include="EntryPoint.h">
       <Filter>Hulk\Entry point</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Hulk\src\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
