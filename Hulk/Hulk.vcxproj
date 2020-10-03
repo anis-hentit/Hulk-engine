@@ -153,13 +153,11 @@
     <ClInclude Include="includes\d3dApp.h" />
     <ClInclude Include="includes\d3dUtil.h" />
     <ClInclude Include="includes\DDSTextureLoader.h" />
-    <ClInclude Include="includes\forward.hpp" />
     <ClInclude Include="includes\FrameResource.h" />
     <ClInclude Include="includes\GameTimer.h" />
     <ClInclude Include="includes\GeometryGenerator.h" />
     <ClInclude Include="includes\Instrumentor.h" />
     <ClInclude Include="includes\MathHelper.h" />
-    <ClInclude Include="includes\sol.hpp" />
     <ClInclude Include="includes\UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>

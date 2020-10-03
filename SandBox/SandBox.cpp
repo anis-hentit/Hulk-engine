@@ -489,13 +489,13 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 6> SandBox::GetStaticSamplers()
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP,//v address mode
 		D3D12_TEXTURE_ADDRESS_MODE_CLAMP);//w address mode (for 3d textures)
 
-	const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
+	 const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
 		4,
 		D3D12_FILTER_ANISOTROPIC,// FILTER
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,// u address mode
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP,//v address mode
 		D3D12_TEXTURE_ADDRESS_MODE_WRAP);//w address mode (for 3d textures)
-
+	
 	const CD3DX12_STATIC_SAMPLER_DESC anisotropicClamp(
 		5,
 		D3D12_FILTER_ANISOTROPIC,// FILTER

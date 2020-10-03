@@ -19,6 +19,7 @@ extern  HULK_API LRESULT im_gui_impl_win32_wnd_proc_handler(HWND hWnd, UINT msg,
 
 namespace Hulk {
 
+
 	void D3DApp::ImGuiInitialize(HWND hwnd, ID3D12Device * device,int num_frames_in_flight, DXGI_FORMAT rendertargetformart)
 {
 

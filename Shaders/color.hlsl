@@ -16,12 +16,6 @@
 #include "LightingUtil.hlsl"
 
 
-// per object constant buffer
-cbuffer cbPerObject : register(b0)
-{
-	float4x4 gWorld;
-	float4x4 gTexTransform;
-};
 
 //diffuse texture
 Texture2D    gDiffuseMap : register(t0);
@@ -52,6 +46,13 @@ cbuffer cbPass : register(b2)
 	float gDeltaTime;
 	float4 gAmbientLight;
 	Light gLights[MaxLights];
+};
+
+// per object constant buffer
+cbuffer cbPerObject : register(b0)
+{
+    float4x4 gWorld;
+    float4x4 gTexTransform;
 };
 
 
@@ -107,7 +108,7 @@ float4 PS(VertexOut pin) : SV_Target
 	// Interpolating normal can unnormalize it, so renormalize it.
 	pin.NormalW = normalize(pin.NormalW);
 	
-	float4 DiffuseAlbedo = gDiffuseMap.Sample(gSamAnisotropicWrap, pin.TexCord) * gDiffuseAlbedo;
+    float4 DiffuseAlbedo = gDiffuseMap.Sample(gSamAnisotropicWrap, pin.TexCord) * gDiffuseAlbedo;
 	// Vector from point being lit to eye. 
 	float3 toEyeW = normalize(gEyePosW - pin.PosW);
 

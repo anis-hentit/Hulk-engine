@@ -3,19 +3,19 @@
 //***************************************************************************************
 
 #pragma once
-#include "imgui_impl_dx12.h"
+#include "../Vendor/Imgui/imgui_impl_dx12.h"
 #if defined(DEBUG) || defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
 
 #include "../../Vendor/Imgui/imgui.h"
-#include "imgui_impl_win32.h"
-#include "imgui_impl_dx12.h"
+#include "../Vendor/Imgui/imgui_impl_win32.h"
+#include "../Vendor/Imgui/imgui_impl_dx12.h"
 #include "d3dUtil.h"
 #include "GameTimer.h"
 #include "../Core.h"
-#include "sol.hpp"
+#include "../Vendor/Sol/sol.hpp"
 // Link necessary d3d12 libraries.
 #pragma comment(lib,"d3dcompiler.lib")
 #pragma comment(lib, "D3D12.lib")

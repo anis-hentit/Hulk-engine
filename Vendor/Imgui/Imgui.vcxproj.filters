@@ -36,10 +36,10 @@
     <ClInclude Include="imstb_truetype.h">
       <Filter>imgui root</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Hulk\includes\imgui_impl_dx12.h">
+    <ClInclude Include="..\..\Hulk\Vendor\Imgui\imgui_impl_dx12.h">
       <Filter>imgui root</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Hulk\includes\imgui_impl_win32.h">
+    <ClInclude Include="..\..\Hulk\Vendor\Imgui\imgui_impl_win32.h">
       <Filter>imgui root</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,10 +56,10 @@
     <ClCompile Include="imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Hulk\includes\imgui_impl_dx12.cpp">
+    <ClCompile Include="..\..\Hulk\Vendor\Imgui\imgui_impl_dx12.cpp">
       <Filter>imgui root</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Hulk\includes\imgui_impl_win32.cpp">
+    <ClCompile Include="..\..\Hulk\Vendor\Imgui\imgui_impl_win32.cpp">
       <Filter>imgui root</Filter>
     </ClCompile>
   </ItemGroup>

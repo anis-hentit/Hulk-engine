@@ -25,9 +25,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Hulk\Sol">
-      <UniqueIdentifier>{e394231b-9ada-475b-a05d-1bba12fcc2b8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Hulk\Entry point">
       <UniqueIdentifier>{0f617512-0683-4341-9e1b-5db5d9767b4e}</UniqueIdentifier>
     </Filter>
@@ -88,12 +85,6 @@
     </ClInclude>
     <ClInclude Include="Core.h">
       <Filter>Hulk\src</Filter>
-    </ClInclude>
-    <ClInclude Include="includes\forward.hpp">
-      <Filter>Hulk\Sol</Filter>
-    </ClInclude>
-    <ClInclude Include="includes\sol.hpp">
-      <Filter>Hulk\Sol</Filter>
     </ClInclude>
     <ClInclude Include="EntryPoint.h">
       <Filter>Hulk\Entry point</Filter>
