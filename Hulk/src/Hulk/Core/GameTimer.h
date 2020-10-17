@@ -4,7 +4,7 @@
 
 #ifndef GAMETIMER_H
 #define GAMETIMER_H
-#include "../Core.h"
+#include "../../../Core.h"
 
 namespace Hulk{
 class  HULK_API GameTimer

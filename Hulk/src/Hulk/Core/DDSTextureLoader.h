@@ -29,7 +29,7 @@
 #pragma warning(push)
 #pragma warning(disable : 4005)
 #include <stdint.h>
-#include "../Core.h"
+#include "../../../Core.h"
 #pragma warning(pop)
 
 #if defined(_MSC_VER) && (_MSC_VER<1610) && !defined(_In_reads_)

@@ -155,31 +155,21 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Core.h" />
-    <ClInclude Include="EntryPoint.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="Hulk.h" />
-    <ClInclude Include="includes\d3dApp.h" />
-    <ClInclude Include="includes\d3dUtil.h" />
-    <ClInclude Include="includes\DDSTextureLoader.h" />
-    <ClInclude Include="includes\FrameResource.h" />
-    <ClInclude Include="includes\GameTimer.h" />
-    <ClInclude Include="includes\GeometryGenerator.h" />
-    <ClInclude Include="includes\Instrumentor.h" />
-    <ClInclude Include="includes\MathHelper.h" />
-    <ClInclude Include="includes\UploadBuffer.h" />
-    <ClInclude Include="Log.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="includes\d3dApp.cpp" />
-    <ClCompile Include="includes\d3dUtil.cpp" />
-    <ClCompile Include="includes\DDSTextureLoader.cpp" />
-    <ClCompile Include="includes\FrameResource.cpp" />
-    <ClCompile Include="includes\GameTimer.cpp" />
-    <ClCompile Include="includes\GeometryGenerator.cpp" />
-    <ClCompile Include="includes\MathHelper.cpp" />
-    <ClCompile Include="Log.cpp" />
+    <ClInclude Include="src\Hulk.h" />
+    <ClInclude Include="src\Hulk\Core\Base.h" />
+    <ClInclude Include="src\Hulk\Core\d3dApp.h" />
+    <ClInclude Include="src\Hulk\Core\d3dUtil.h" />
+    <ClInclude Include="src\Hulk\Core\DDSTextureLoader.h" />
+    <ClInclude Include="src\Hulk\Core\EntryPoint.h" />
+    <ClInclude Include="src\Hulk\Core\FrameResource.h" />
+    <ClInclude Include="src\Hulk\Core\GameTimer.h" />
+    <ClInclude Include="src\Hulk\Core\GeometryGenerator.h" />
+    <ClInclude Include="src\Hulk\Core\Log.h" />
+    <ClInclude Include="src\Hulk\Core\MathHelper.h" />
+    <ClInclude Include="src\Hulk\Core\PlatformDetection.h" />
+    <ClInclude Include="src\Hulk\Core\UploadBuffer.h" />
+    <ClInclude Include="src\Hulk\Core\Window.h" />
+    <ClInclude Include="src\Hulk\Debug\Instrumentor.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">
@@ -195,6 +185,17 @@
     <ProjectReference Include="..\Vendor\Imgui\Imgui.vcxproj">
       <Project>{81d6f890-3265-4641-87ee-37defe343206}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Hulk\Core\d3dApp.cpp" />
+    <ClCompile Include="src\Hulk\Core\d3dUtil.cpp" />
+    <ClCompile Include="src\Hulk\Core\DDSTextureLoader.cpp" />
+    <ClCompile Include="src\Hulk\Core\FrameResource.cpp" />
+    <ClCompile Include="src\Hulk\Core\GameTimer.cpp" />
+    <ClCompile Include="src\Hulk\Core\GeometryGenerator.cpp" />
+    <ClCompile Include="src\Hulk\Core\Log.cpp" />
+    <ClCompile Include="src\Hulk\Core\MathHelper.cpp" />
+    <ClCompile Include="src\Hulk\Core\Window.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

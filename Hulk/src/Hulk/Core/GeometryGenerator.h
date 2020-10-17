@@ -17,7 +17,7 @@
 #include <cstdint>
 #include <DirectXMath.h>
 #include <vector>
-#include "../Core.h"
+#include "../../../Core.h"
 
 namespace Hulk{
 	

@@ -1,5 +1,5 @@
 #pragma once
-#include "Core.h"
+#include "../../../Core.h"
 
 #ifdef HK_PLATFORM_WINDOWS
 

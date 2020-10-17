@@ -9,7 +9,7 @@
 #include <Windows.h>
 #include <DirectXMath.h>
 #include <cstdint>
-#include "../Core.h"
+#include "../../../Core.h"
 
 namespace Hulk{
 class HULK_API MathHelper

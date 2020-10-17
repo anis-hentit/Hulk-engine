@@ -6,8 +6,8 @@
 
 #include <iostream>
 #include <WindowsX.h>
-#include "Instrumentor.h"
-#include "../Log.h"
+#include "../Debug//Instrumentor.h"
+#include "Log.h"
 #include"stdlib.h"
 
 

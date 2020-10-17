@@ -28,7 +28,7 @@
 #include"d3dx12.h"
 #include "DDSTextureLoader.h"
 #include "MathHelper.h"
-#include "../Core.h"
+#include "../../../Core.h"
 
 const int gNumFrameResources = 3;
 
