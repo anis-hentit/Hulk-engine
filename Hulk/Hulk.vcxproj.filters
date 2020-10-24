@@ -31,6 +31,9 @@
     <Filter Include="Hulk\Debug">
       <UniqueIdentifier>{c7ab4863-352a-4942-ad7e-7cee6a8d17e9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hulk\src\events">
+      <UniqueIdentifier>{f601b3ee-b64e-4ee0-926b-aaec5ddd294a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Hulk\Core\Base.h">
@@ -80,6 +83,24 @@
     </ClInclude>
     <ClInclude Include="src\Hulk.h">
       <Filter>Integration</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hulk\Events\Event.h">
+      <Filter>Hulk\src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hulk\Events\KeyEvent.h">
+      <Filter>Hulk\src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hulk\Events\MouseEvent.h">
+      <Filter>Hulk\src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hulk\Events\ApplicationEvent.h">
+      <Filter>Hulk\src\events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hulk\Core\KeyCodes.h">
+      <Filter>Hulk\src\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Hulk\Core\MouseCodes.h">
+      <Filter>Hulk\src\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

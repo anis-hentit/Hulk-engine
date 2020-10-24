@@ -164,12 +164,18 @@
     <ClInclude Include="src\Hulk\Core\FrameResource.h" />
     <ClInclude Include="src\Hulk\Core\GameTimer.h" />
     <ClInclude Include="src\Hulk\Core\GeometryGenerator.h" />
+    <ClInclude Include="src\Hulk\Core\KeyCodes.h" />
     <ClInclude Include="src\Hulk\Core\Log.h" />
     <ClInclude Include="src\Hulk\Core\MathHelper.h" />
+    <ClInclude Include="src\Hulk\Core\MouseCodes.h" />
     <ClInclude Include="src\Hulk\Core\PlatformDetection.h" />
     <ClInclude Include="src\Hulk\Core\UploadBuffer.h" />
     <ClInclude Include="src\Hulk\Core\Window.h" />
     <ClInclude Include="src\Hulk\Debug\Instrumentor.h" />
+    <ClInclude Include="src\Hulk\Events\ApplicationEvent.h" />
+    <ClInclude Include="src\Hulk\Events\Event.h" />
+    <ClInclude Include="src\Hulk\Events\KeyEvent.h" />
+    <ClInclude Include="src\Hulk\Events\MouseEvent.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">
