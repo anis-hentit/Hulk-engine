@@ -7,9 +7,8 @@
 
 namespace Hulk {
 
-	// Events are currently blocking
+	// Events are blocking
 	
-
 	enum class EventType
 	{
 		None = 0,
@@ -20,7 +19,7 @@ namespace Hulk {
 	};
 
 	
-	enum EventCategory : INT
+	enum EventCategory 
 	{
 		None = 0,
 		EventCategoryApplication    = BIT(0),
@@ -29,6 +28,7 @@ namespace Hulk {
 		EventCategoryMouse          = BIT(3),
 		EventCategoryMouseButton    = BIT(4)
 	};
+	
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
 								virtual EventType GetEventType() const override { return GetStaticType(); }\
@@ -56,6 +56,7 @@ namespace Hulk {
 		}
 	};
 
+	
 	class HULK_API EventDispatcher
 	{
 	public:

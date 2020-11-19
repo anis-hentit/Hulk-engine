@@ -176,6 +176,7 @@
     <ClInclude Include="src\Hulk\Events\Event.h" />
     <ClInclude Include="src\Hulk\Events\KeyEvent.h" />
     <ClInclude Include="src\Hulk\Events\MouseEvent.h" />
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">
@@ -202,6 +203,8 @@
     <ClCompile Include="src\Hulk\Core\Log.cpp" />
     <ClCompile Include="src\Hulk\Core\MathHelper.cpp" />
     <ClCompile Include="src\Hulk\Core\Window.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

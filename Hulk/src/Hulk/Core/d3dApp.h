@@ -142,7 +142,7 @@ protected:
 	int mClientWidth = 1200;
 	int mClientHeight = 720;
 
-	UINT imguiDescriptorOffset = 0;//need to change that every time i add a texture//fixed no longer need to change that every time i added a condition in buildtexture()
+	UINT imguiDescriptorOffset = 0;//changes every time i add a texture on the text heap, i added a condition in buildtexture() for that
 };
 	
 	

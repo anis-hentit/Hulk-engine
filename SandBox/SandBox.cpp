@@ -60,7 +60,6 @@ struct RenderItem
 class SandBox : public Hulk::D3DApp
 {
 public:
-	int Run();
 	SandBox(HINSTANCE hInstance);
 	~SandBox();
 
@@ -201,45 +200,6 @@ void Hulk::CreateApplication()
 
 
 
-int SandBox::Run()
-{
-	MSG msg = {0};
- 
-	mTimer.Reset();
-	
-	while(msg.message != WM_QUIT)
-	{
-		// If there are Window messages then process them.
-		if(PeekMessage( &msg, 0, 0, 0, PM_REMOVE ))
-		{
-            TranslateMessage( &msg );
-            DispatchMessage( &msg );
-		}
-		// Otherwise, do animation/game stuff.
-		
-		else
-        {
-			
-			mTimer.Tick();
-			
-			if( !mAppPaused )
-			{
-				//CalculateFrameStats();
-				
-				Update(mTimer);
-				ImGuiUpdate();
-                Draw(mTimer);
-				
-			}
-			else
-			{
-				Sleep(100);
-			}
-        }
-    }
-	
-	return (int)msg.wParam;
-}
 
 
 SandBox::SandBox(HINSTANCE hInstance)

@@ -2,6 +2,7 @@
 
 #include "Event.h"
 
+
 namespace Hulk {
 
 	class  HULK_API WindowResizeEvent : public Event

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <Windows.h>
 #include <WindowsX.h>
-
+#include "../Events/ApplicationEvent.h"
 #include "../Debug//Instrumentor.h"
 #include "Log.h"
 #include"stdlib.h"
@@ -108,6 +108,8 @@ int D3DApp::Run()
 	MSG msg = {0};
  
 	mTimer.Reset();
+		WindowResizeEvent ev(1280,720);
+	HK_TRACE(ev);
 	
 	while(msg.message != WM_QUIT)
 	{
@@ -128,6 +130,7 @@ int D3DApp::Run()
 			{
 				CalculateFrameStats();
 				Update(mTimer);
+				ImGuiUpdate();
                 Draw(mTimer);
 				
 			}
@@ -154,7 +157,7 @@ bool D3DApp::Initialize()
 	HK_CORE_INFO("Initialized Direct3D!");
     // Do the initial resize code.
      OnResize();
-
+	 
 	return true;
 }
  

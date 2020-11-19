@@ -34,6 +34,12 @@
     <Filter Include="Hulk\src\events">
       <UniqueIdentifier>{f601b3ee-b64e-4ee0-926b-aaec5ddd294a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hulk\src\D3D12">
+      <UniqueIdentifier>{f608ac9d-42cf-4803-8b34-c8e95850f674}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk\src\Windows">
+      <UniqueIdentifier>{f230343b-33df-48b8-accb-70840fbdc0da}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Hulk\Core\Base.h">
@@ -102,6 +108,9 @@
     <ClInclude Include="src\Hulk\Core\MouseCodes.h">
       <Filter>Hulk\src\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
+      <Filter>Hulk\src\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">
@@ -138,6 +147,12 @@
     </ClCompile>
     <ClCompile Include="src\Hulk\Core\Window.cpp">
       <Filter>Hulk\src\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsInput.cpp">
+      <Filter>Hulk\src\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
+      <Filter>Hulk\src\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
