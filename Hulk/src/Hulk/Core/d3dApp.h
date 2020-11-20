@@ -8,7 +8,9 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
+#include <iostream>
 
+#include"Window.h"
 #include "../../../../Vendor/Imgui/imgui.h"
 #include "../../../Vendor/Imgui/imgui_impl_win32.h"
 #include "../../../Vendor/Imgui/imgui_impl_dx12.h"
@@ -40,7 +42,7 @@ public:
     static D3DApp* GetApp();
     
 	HINSTANCE AppInst()const;
-	HWND      MainWnd()const;
+	Window& MainWnd()const;
 	float     AspectRatio()const;
 
     bool Get4xMsaaState()const;
@@ -49,7 +51,6 @@ public:
 	virtual int Run() ;
  
     virtual bool Initialize();
-    virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
     virtual void ImGuiInitialize(HWND hwnd, ID3D12Device* device, int num_frames_in_flight,
                                  DXGI_FORMAT rendertargetformart);
 protected:
@@ -58,11 +59,13 @@ protected:
 	virtual void Update(const GameTimer& gt)=0;
     virtual void Draw(const GameTimer& gt)=0;
 	virtual void ImGuiUpdate() ;
+
+	//static Window* GetWindowsWindowObject(){return  mhMainWnd.get();} //return pointer to the window object
 	
 	// Convenience overrides for handling mouse input.
 	virtual void OnMouseDown(WPARAM btnState, int x, int y){ }
 	virtual void OnMouseUp(WPARAM btnState, int x, int y)  { }
-	virtual void OnMouseMove(WPARAM btnState, int x, int y){ }
+	virtual void OnMouseMove(WPARAM btnState, int x, int y){ std::cout<<"nigga"; }
 
     virtual void RenderOverlay(ID3D12GraphicsCommandList * cmdlist);
 	virtual void Shutdown();
@@ -92,7 +95,7 @@ protected:
     static D3DApp* mApp;
 
     HINSTANCE mhAppInst = nullptr; // application instance handle
-    HWND      mhMainWnd = nullptr; // main window handle
+    std::unique_ptr<Window> mhMainWnd; // Windows Window sp
 	bool      mAppPaused = false;  // is the application paused?
 	bool      mMinimized = false;  // is the application minimized?
 	bool      mMaximized = false;  // is the application maximized?
@@ -135,14 +138,16 @@ protected:
 	UINT mCbvSrvUavDescriptorSize = 0;
 
 	// Derived class should set these in derived constructor to customize starting values.
-	std::wstring mMainWndCaption = L"d3d App";
+	//std::wstring mMainWndCaption = L"d3d App";
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
     DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	int mClientWidth = 1200;
-	int mClientHeight = 720;
+	//int mClientWidth = 1200;
+	//int mClientHeight = 720;
 
 	UINT imguiDescriptorOffset = 0;//changes every time i add a texture on the text heap, i added a condition in buildtexture() for that
+
+	friend class WindowsWindow;
 };
 	
 	

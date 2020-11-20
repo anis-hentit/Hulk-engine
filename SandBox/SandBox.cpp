@@ -63,7 +63,7 @@ public:
 	SandBox(HINSTANCE hInstance);
 	~SandBox();
 
-	virtual bool Initialize()override;
+	virtual bool Initialize() override;
 
 private:
 	virtual void OnResize()override;
@@ -193,6 +193,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	}
 }
 
+
 void Hulk::CreateApplication()
 {
 	WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
@@ -244,7 +245,7 @@ bool SandBox::Initialize()
 	//Wait until init is complete
 	FlushCommandQueue();
 	
-	ImGuiInitialize(mhMainWnd,md3dDevice.Get(), gNumFrameResources,
+	ImGuiInitialize((HWND)mhMainWnd->GetNativeWindow(),md3dDevice.Get(), gNumFrameResources,
 		mBackBufferFormat);
 	
 	HK_INFO("Initialized APP!");
@@ -268,7 +269,7 @@ void SandBox::OnMouseDown(WPARAM btnState, int x, int y)
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 
-	SetCapture(mhMainWnd);
+	SetCapture((HWND)mhMainWnd->GetNativeWindow());
 }
 
 void SandBox::OnMouseUp(WPARAM btnState, int x, int y)
@@ -1010,8 +1011,8 @@ void SandBox::UpdateMainPassCB(const GameTimer & gt)
 	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
 	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
 	mMainPassCB.EyePosW = mEyePos;
-	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mClientWidth, (float)mClientHeight);
-	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mClientWidth, 1.0f / mClientHeight);
+	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mhMainWnd->GetWidth(), (float)mhMainWnd->GetHeight());
+	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mhMainWnd->GetWidth(), 1.0f / mhMainWnd->GetHeight());
 	mMainPassCB.NearZ = 1.0f;
 	mMainPassCB.FarZ = 1000.0f;
 	mMainPassCB.TotalTime = gt.TotalTime();
