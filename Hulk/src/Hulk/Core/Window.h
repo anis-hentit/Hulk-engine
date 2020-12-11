@@ -11,10 +11,10 @@ namespace Hulk
 		std::string Title;
 		uint32_t Width;
 		uint32_t Height;
-		void* mhAppInst;
+		void* mhAppInst = nullptr;
 
 		WindowProps(const std::string& title = "Hulk Engine",
-			        uint32_t width = 1600,
+			        uint32_t width = 1240,
 			        uint32_t height = 900)
 			: Title(title), Width(width), Height(height)
 		{

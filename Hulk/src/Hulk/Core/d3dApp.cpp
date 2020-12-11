@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 
 #include "d3dApp.h"
 
@@ -80,7 +84,8 @@ Window& D3DApp::MainWnd()const // returns ref to the Window object
 
 float D3DApp::AspectRatio()const
 {
-	return static_cast<float>(mhMainWnd->GetWidth() / mhMainWnd->GetHeight());
+	
+	return static_cast<float>(float(mhMainWnd->GetWidth()) / (float)mhMainWnd->GetHeight());
 }
 
 bool D3DApp::Get4xMsaaState()const

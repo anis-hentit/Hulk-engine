@@ -1,3 +1,7 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
+
 #include"WindowsWindow.h"
 
 #include <iostream>
@@ -128,7 +132,7 @@ namespace Hulk
 	// WM_EXITSIZEMOVE is sent when the user releases the resize bars.
 	// Here we reset everything based on the new window dimensions.
 	case WM_EXITSIZEMOVE:
-		
+
 		D3DApp::GetApp()->mAppPaused = false;
 		D3DApp::GetApp()->mResizing  = false;
 		D3DApp::GetApp()->mTimer.Start();
@@ -192,7 +196,7 @@ namespace Hulk
 		assert(mWindowsWnObject == nullptr);
 		WindowsWindow::mWindowsWnObject = this;
 		
-		mhAppInst =(HINSTANCE)props.mhAppInst;
+		//mhAppInst =(HINSTANCE)props.mhAppInst;
 		Init(props);
 		
 		
@@ -220,7 +224,7 @@ namespace Hulk
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
-		
+		m_Data.mhAppInst = (HINSTANCE) props.mhAppInst;
 		//HK_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 		
 		
@@ -229,7 +233,7 @@ namespace Hulk
 		wc.lpfnWndProc   = MainWndProc; 
 		wc.cbClsExtra    = 0;
 		wc.cbWndExtra    = 0;
-		wc.hInstance     = mhAppInst;
+		wc.hInstance     = m_Data.mhAppInst;
 		wc.hIcon         = LoadIcon(0, IDI_APPLICATION);
 		wc.hCursor       = LoadCursor(0, IDC_ARROW);
 		wc.hbrBackground = (HBRUSH)GetStockObject(NULL_BRUSH);
@@ -249,7 +253,7 @@ namespace Hulk
 		int height = R.bottom - R.top;
 
 		mhMainWnd = CreateWindow(L"MainWnd", s2ws(m_Data.Title).c_str(), 
-			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, mhAppInst, 0);
+			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, m_Data.mhAppInst, 0);
 		if( !mhMainWnd )
 		{
 			MessageBox(0, L"CreateWindow Failed.", 0, 0);

@@ -31,17 +31,18 @@ namespace Hulk
 		virtual bool Init(const WindowProps& props);
 		//virtual void Shutdown();
 	private:
-		HINSTANCE mhAppInst = nullptr;
+		//main windows app handle
 		HWND mhMainWnd = nullptr; //main window handle
 	    static WindowsWindow* mWindowsWnObject;
-		//Scope<GraphicsContext> m_Context;
+		//Scope<GraphicsContext> m_Context; TO BE IMPLEMENTED 
 
 		struct WindowData
 		{
 			std::string Title;
-			unsigned int Width, Height;
+			int Width, Height;
 			bool VSync;
-
+			HINSTANCE mhAppInst = nullptr;
+			
 			EventCallbackFn EventCallback;
 		};
 
