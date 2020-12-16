@@ -248,7 +248,7 @@ bool SandBox::Initialize()
 	//Wait until init is complete
 	FlushCommandQueue();
 	
-	ImGuiInitialize((HWND)mhMainWnd->GetNativeWindow(),md3dDevice.Get(), gNumFrameResources,
+	ImGuiInitialize((HWND)mMainWnd->GetNativeWindow(),md3dDevice.Get(), gNumFrameResources,
 		mBackBufferFormat);
 	
 	HK_INFO("Initialized APP!");
@@ -272,7 +272,7 @@ void SandBox::OnMouseDown(WPARAM btnState, int x, int y)
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
 
-	SetCapture((HWND)mhMainWnd->GetNativeWindow());
+	SetCapture((HWND)mMainWnd->GetNativeWindow());
 }
 
 void SandBox::OnMouseUp(WPARAM btnState, int x, int y)
@@ -1014,8 +1014,8 @@ void SandBox::UpdateMainPassCB(const GameTimer & gt)
 	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
 	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
 	mMainPassCB.EyePosW = mEyePos;
-	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mhMainWnd->GetWidth(), (float)mhMainWnd->GetHeight());
-	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mhMainWnd->GetWidth(), 1.0f / mhMainWnd->GetHeight());
+	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mMainWnd->GetWidth(), (float)mMainWnd->GetHeight());
+	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mMainWnd->GetWidth(), 1.0f / mMainWnd->GetHeight());
 	mMainPassCB.NearZ = 1.0f;
 	mMainPassCB.FarZ = 1000.0f;
 	mMainPassCB.TotalTime = gt.TotalTime();

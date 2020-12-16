@@ -26,6 +26,13 @@ namespace Hulk
 }
 
 	
+	Scope<Window> WindowsWindow::Create(const WindowProps & props)
+	{
+		Scope<WindowsWindow>wn = std::make_unique<WindowsWindow>(props);
+		
+		return wn;
+	}
+
 	LRESULT WindowsWindow::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {   
 	if (im_gui_impl_win32_wnd_proc_handler(hwnd, msg, wParam, lParam))
@@ -189,15 +196,15 @@ namespace Hulk
 	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
+	
 	WindowsWindow::WindowsWindow(const WindowProps& props)
 	{
 		HK_PROFILE_FUNCTION();
 		
 		assert(mWindowsWnObject == nullptr);
 		WindowsWindow::mWindowsWnObject = this;
+		mWndProps = props;
 		
-		//mhAppInst =(HINSTANCE)props.mhAppInst;
-		Init(props);
 		
 		
 	}

@@ -62,7 +62,7 @@ D3DApp::D3DApp(HINSTANCE hInstance)
     assert(mApp == nullptr);
     mApp = this;
 	wp.mhAppInst = hInstance;
-	mhMainWnd = make_unique<WindowsWindow>(wp);
+	mMainWnd = WindowsWindow::Create(wp);
 }
 
 D3DApp::~D3DApp()
@@ -79,13 +79,13 @@ HINSTANCE D3DApp::AppInst()const
 
 Window& D3DApp::MainWnd()const // returns ref to the Window object
 {
-	return *mhMainWnd;
+	return *mMainWnd;
 }
 
 float D3DApp::AspectRatio()const
 {
 	
-	return static_cast<float>(float(mhMainWnd->GetWidth()) / (float)mhMainWnd->GetHeight());
+	return static_cast<float>(float(mMainWnd->GetWidth()) / (float)mMainWnd->GetHeight());
 }
 
 bool D3DApp::Get4xMsaaState()const
@@ -116,7 +116,7 @@ int D3DApp::Run()
 		// If there are Window messages then process them.
 		if(PeekMessage( &msg, 0, 0, 0, PM_REMOVE ))
 		{
-            mhMainWnd->OnUpdate(msg);
+            mMainWnd->OnUpdate(msg);
 		}
 		// Otherwise, do animation/game stuff.
 		
@@ -149,10 +149,12 @@ bool D3DApp::Initialize()
 	HK_CORE_INFO("Initialized Log!");
 	
 	//window initialized in constructor
+	InitMainWindow();
 	HK_CORE_INFO("Initialized Main Window!");
 	
 	if(!InitDirect3D())
 		return false;
+	
 	HK_CORE_INFO("Initialized Direct3D!");
     // Do the initial resize code.
      OnResize();
@@ -200,7 +202,7 @@ void D3DApp::OnResize()
 	// Resize the swap chain.
     ThrowIfFailed(mSwapChain->ResizeBuffers(
 		SwapChainBufferCount, 
-		mhMainWnd->GetWidth(), mhMainWnd->GetHeight(), 
+		mMainWnd->GetWidth(), mMainWnd->GetHeight(), 
 		mBackBufferFormat, 
 		DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
@@ -218,8 +220,8 @@ void D3DApp::OnResize()
     D3D12_RESOURCE_DESC depthStencilDesc;
     depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
     depthStencilDesc.Alignment = 0;
-    depthStencilDesc.Width = mhMainWnd->GetWidth();
-    depthStencilDesc.Height = mhMainWnd->GetHeight();
+    depthStencilDesc.Width = mMainWnd->GetWidth();
+    depthStencilDesc.Height = mMainWnd->GetHeight();
     depthStencilDesc.DepthOrArraySize = 1;
     depthStencilDesc.MipLevels = 1;
 
@@ -270,12 +272,12 @@ void D3DApp::OnResize()
 	// Update the viewport transform to cover the client area.
 	mScreenViewport.TopLeftX = 0;
 	mScreenViewport.TopLeftY = 0;
-	mScreenViewport.Width    = static_cast<float>(mhMainWnd->GetWidth());
-	mScreenViewport.Height   = static_cast<float>(mhMainWnd->GetHeight());
+	mScreenViewport.Width    = static_cast<float>(mMainWnd->GetWidth());
+	mScreenViewport.Height   = static_cast<float>(mMainWnd->GetHeight());
 	mScreenViewport.MinDepth = 0.0f;
 	mScreenViewport.MaxDepth = 1.0f;
 
-    mScissorRect = { 0, 0, (LONG)mhMainWnd->GetWidth(), (LONG)mhMainWnd->GetHeight() };
+    mScissorRect = { 0, 0, (LONG)mMainWnd->GetWidth(), (LONG)mMainWnd->GetHeight() };
 }
 
 
@@ -343,7 +345,7 @@ void  HULK_API D3DApp::ImGuiUpdate()
 
 	bool D3DApp::InitMainWindow()
 {
-	// Window in initialized in constructor
+	mMainWnd->Init(mMainWnd->GetWnProps());
 	return true;
 }
 
@@ -448,8 +450,8 @@ void D3DApp::CreateSwapChain()
 	
 
     DXGI_SWAP_CHAIN_DESC sd;
-    sd.BufferDesc.Width = mhMainWnd->GetWidth();
-    sd.BufferDesc.Height = mhMainWnd->GetHeight();
+    sd.BufferDesc.Width = mMainWnd->GetWidth();
+    sd.BufferDesc.Height = mMainWnd->GetHeight();
     sd.BufferDesc.RefreshRate.Numerator = 60;
     sd.BufferDesc.RefreshRate.Denominator = 1;
     sd.BufferDesc.Format = mBackBufferFormat;
@@ -459,7 +461,7 @@ void D3DApp::CreateSwapChain()
     sd.SampleDesc.Quality = m4xMsaaState ? (m4xMsaaQuality - 1) : 0;
     sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
     sd.BufferCount = SwapChainBufferCount;
-    sd.OutputWindow = (HWND)mhMainWnd->GetNativeWindow();
+    sd.OutputWindow = (HWND)mMainWnd->GetNativeWindow();
     sd.Windowed = true;
 	sd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
     sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
@@ -535,11 +537,11 @@ void D3DApp::CalculateFrameStats()
         wstring fpsStr = to_wstring(fps);
         wstring mspfStr = to_wstring(mspf);
 
-        wstring windowText = s2ws(mhMainWnd->GetTitle()) +
+        wstring windowText = s2ws(mMainWnd->GetTitle()) +
             L"    fps: " + fpsStr +
             L"   mspf: " + mspfStr;
 
-        SetWindowText((HWND)mhMainWnd->GetNativeWindow(), windowText.c_str());
+        SetWindowText((HWND)mMainWnd->GetNativeWindow(), windowText.c_str());
 		
 		// Reset for next average.
 		frameCnt = 0;

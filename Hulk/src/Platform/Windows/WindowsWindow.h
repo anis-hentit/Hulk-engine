@@ -15,6 +15,7 @@ namespace Hulk
 		void OnUpdate(MSG msg) override;
 		static WindowsWindow* GetWindowsWindowObject(){return mWindowsWnObject;}
 		
+		static Scope<Window> Create(const WindowProps& props = WindowProps());
 		
 	    LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 		
@@ -25,10 +26,11 @@ namespace Hulk
 		void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override {m_Data.VSync = enabled;};
 		bool IsVSync() const override {return m_Data.VSync;};
-
+		WindowProps GetWnProps() const override {return mWndProps;}
 		virtual void* GetNativeWindow() const { return mhMainWnd; }
 	private:
 		virtual bool Init(const WindowProps& props);
+		
 		//virtual void Shutdown();
 	private:
 		//main windows app handle
@@ -46,6 +48,8 @@ namespace Hulk
 			EventCallbackFn EventCallback;
 		};
 
+		WindowProps mWndProps;
 		WindowData m_Data;
+		
 	};
 }

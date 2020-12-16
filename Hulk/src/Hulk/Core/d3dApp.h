@@ -60,7 +60,7 @@ protected:
     virtual void Draw(const GameTimer& gt)=0;
 	virtual void ImGuiUpdate() ;
 
-	//static Window* GetWindowsWindowObject(){return  mhMainWnd.get();} //return pointer to the window object
+	//static Window* GetWindowsWindowObject(){return  mMainWnd.get();} //return pointer to the window object
 	
 	// Convenience overrides for handling mouse input.
 	virtual void OnMouseDown(WPARAM btnState, int x, int y){ }
@@ -72,7 +72,7 @@ protected:
 protected:
 	bool show_demo_window = false;
 	bool show_another_window = false;
-	float clear_color[4] = { 0.941176534f, 0.9725481f, 1.000000000f, 1.000000000f } ;
+	float clear_color[4] = { 0.941176534f, 0.9725481f, 1.000000000f, 1.000000000f };
 	bool InitMainWindow();
 	bool InitDirect3D();
 	void CreateCommandObjects();
@@ -95,7 +95,7 @@ protected:
     static D3DApp* mApp;
 
     HINSTANCE mhAppInst = nullptr; // application instance handle
-    std::unique_ptr<Window> mhMainWnd; // Windows Window sp
+    Scope<Window> mMainWnd; // Windows Window sp
 	bool      mAppPaused = false;  // is the application paused?
 	bool      mMinimized = false;  // is the application minimized?
 	bool      mMaximized = false;  // is the application maximized?
