@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../Hulk/Core/Window.h"
-#include <WindowsX.h>
 #include "../../Hulk/Core/d3dApp.h"
 
 namespace Hulk

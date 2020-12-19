@@ -2,7 +2,7 @@
 
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-#include <windows.h>
+#include "hkpch.h"
 #include "GameTimer.h"
 
 namespace Hulk {
@@ -48,6 +48,7 @@ float GameTimer::TotalTime()const
 	{
 		return (float)(((mCurrTime-mPausedTime)-mBaseTime)*mSecondsPerCount);
 	}
+	
 }
 
 float GameTimer::DeltaTime()const

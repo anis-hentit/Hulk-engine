@@ -111,6 +111,9 @@
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>Hulk\src\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="src\hkpch.h">
+      <Filter>Hulk</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">
@@ -153,6 +156,9 @@
     </ClCompile>
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>Hulk\src\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\hkpch.cpp">
+      <Filter>Hulk</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

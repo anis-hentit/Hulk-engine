@@ -1,14 +1,11 @@
-//***************************************************************************************
-// d3dApp.h by Frank Luna (C) 2015 All Rights Reserved.
-//***************************************************************************************
-
 #pragma once
+
 #include "../../../Vendor/Imgui/imgui_impl_dx12.h"
 #if defined(DEBUG) || defined(_DEBUG)
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
-#include <iostream>
+
 
 #include"Window.h"
 #include "../../../../Vendor/Imgui/imgui.h"
@@ -60,7 +57,7 @@ protected:
     virtual void Draw(const GameTimer& gt)=0;
 	virtual void ImGuiUpdate() ;
 
-	//static Window* GetWindowsWindowObject(){return  mMainWnd.get();} //return pointer to the window object
+	
 	
 	// Convenience overrides for handling mouse input.
 	virtual void OnMouseDown(WPARAM btnState, int x, int y){ }
@@ -69,6 +66,7 @@ protected:
 
     virtual void RenderOverlay(ID3D12GraphicsCommandList * cmdlist);
 	virtual void Shutdown();
+	
 protected:
 	bool show_demo_window = false;
 	bool show_another_window = false;
@@ -106,7 +104,7 @@ protected:
     bool      m4xMsaaState = false;    // 4X MSAA enabled
     UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
-	// Used to keep track of the “delta-time” and game time (§4.4).
+	// Used to keep track of the “delta-time” and game time.
 	GameTimer mTimer;
 	
     Microsoft::WRL::ComPtr<IDXGIFactory4> mdxgiFactory;
@@ -138,12 +136,9 @@ protected:
 	UINT mCbvSrvUavDescriptorSize = 0;
 
 	// Derived class should set these in derived constructor to customize starting values.
-	//std::wstring mMainWndCaption = L"d3d App";
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
     DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
     DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	//int mClientWidth = 1200;
-	//int mClientHeight = 720;
 
 	UINT imguiDescriptorOffset = 0;//changes every time i add a texture on the text heap, i added a condition in buildtexture() for that
 

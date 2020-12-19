@@ -6,9 +6,11 @@
 
 #pragma once
 
-#include <Windows.h>
+
 #include <DirectXMath.h>
 #include <cstdint>
+#include <cstdlib>
+
 #include "../../../Core.h"
 
 namespace Hulk{

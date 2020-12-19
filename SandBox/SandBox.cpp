@@ -4,14 +4,11 @@
 
 //#define SOL_CXX_LUA
 
+
+
 #include <DirectXMath.h>
 
 #include "src/Hulk.h"
-#include <iostream>
-#include <WindowsX.h>
-#include <wrl/client.h>
-
-
 #include "dxgidebug.h"
 
 

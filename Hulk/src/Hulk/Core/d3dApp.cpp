@@ -2,12 +2,9 @@
 
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
-
+#include "hkpch.h"
 #include "d3dApp.h"
 
-#include <iostream>
-#include <Windows.h>
-#include <WindowsX.h>
 #include "../Events/ApplicationEvent.h"
 #include "../Debug//Instrumentor.h"
 #include "Log.h"
