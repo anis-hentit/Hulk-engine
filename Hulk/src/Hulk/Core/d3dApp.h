@@ -22,14 +22,13 @@
 
 namespace Hulk
 {
-	//TO BE DEFINED IN CLIEN APPLICATION
-	void CreateApplication();
+	
 	
 class HULK_API D3DApp
 {
 protected:
 
-    D3DApp(HINSTANCE hInstance);
+    D3DApp();
     D3DApp(const D3DApp& rhs) = delete;
     D3DApp& operator=(const D3DApp& rhs) = delete;
     virtual ~D3DApp();
@@ -39,6 +38,7 @@ public:
     static D3DApp* GetApp();
     
 	HINSTANCE AppInst()const;
+	void SetAppInst(HINSTANCE hInstance);
 	Window& MainWnd()const;
 	float     AspectRatio()const;
 
@@ -47,14 +47,14 @@ public:
 
 	virtual int Run() ;
  
-    virtual bool Initialize();
-    virtual void ImGuiInitialize(HWND hwnd, ID3D12Device* device, int num_frames_in_flight,
+        virtual bool Initialize(HINSTANCE hInstance);
+        virtual void ImGuiInitialize(HWND hwnd, ID3D12Device* device, int num_frames_in_flight,
                                  DXGI_FORMAT rendertargetformart);
 protected:
-    virtual void CreateRtvAndDsvDescriptorHeaps();
+        virtual void CreateRtvAndDsvDescriptorHeaps();
 	virtual void OnResize(); 
 	virtual void Update(const GameTimer& gt)=0;
-    virtual void Draw(const GameTimer& gt)=0;
+        virtual void Draw(const GameTimer& gt)=0;
 	virtual void ImGuiUpdate() ;
 
 	
@@ -65,7 +65,7 @@ protected:
 	virtual void OnMouseMove(WPARAM btnState, int x, int y){ }
 
     virtual void RenderOverlay(ID3D12GraphicsCommandList * cmdlist);
-	virtual void Shutdown();
+    virtual void Shutdown();
 	
 protected:
 	bool show_demo_window = false;
@@ -74,7 +74,7 @@ protected:
 	bool InitMainWindow();
 	bool InitDirect3D();
 	void CreateCommandObjects();
-    void CreateSwapChain();
+        void CreateSwapChain();
 
 	void FlushCommandQueue();
 
@@ -82,27 +82,27 @@ protected:
 	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
 	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const;
 
-	void CalculateFrameStats();
+       void CalculateFrameStats();
 
-    void LogAdapters();
-    void LogAdapterOutputs(IDXGIAdapter* adapter);
-    void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
+       void LogAdapters();
+       void LogAdapterOutputs(IDXGIAdapter* adapter);
+       void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
 protected:
 
-    static D3DApp* mApp;
+        static D3DApp* mApp;
 
-    HINSTANCE mhAppInst = nullptr; // application instance handle
-    Scope<Window> mMainWnd; // Windows Window sp
+  HINSTANCE mhAppInst = nullptr; // application instance handle
+  Scope<Window> mMainWnd; // Windows Window sp
 	bool      mAppPaused = false;  // is the application paused?
 	bool      mMinimized = false;  // is the application minimized?
 	bool      mMaximized = false;  // is the application maximized?
 	bool      mResizing = false;   // are the resize bars being dragged?
-    bool      mFullscreenState = false;// fullscreen enabled
+  bool      mFullscreenState = false;// fullscreen enabled
 
 	// Set true to use 4X MSAA (§4.1.8).  The default is false.
-    bool      m4xMsaaState = false;    // 4X MSAA enabled
-    UINT      m4xMsaaQuality = 0;      // quality level of 4X MSAA
+        bool  m4xMsaaState = false;    // 4X MSAA enabled
+        UINT  m4xMsaaQuality = 0;      // quality level of 4X MSAA
 
 	// Used to keep track of the “delta-time” and game time.
 	GameTimer mTimer;
@@ -117,10 +117,11 @@ protected:
     Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
     Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
     Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList2;
+    Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList2;
 
-	static const int SwapChainBufferCount = 2;
-	int mCurrBackBuffer = 0;
+    static const int SwapChainBufferCount = 2;
+    int mCurrBackBuffer = 0;
+    
     Microsoft::WRL::ComPtr<ID3D12Resource> mSwapChainBuffer[SwapChainBufferCount];
     Microsoft::WRL::ComPtr<ID3D12Resource> mDepthStencilBuffer;
 
@@ -137,14 +138,18 @@ protected:
 
 	// Derived class should set these in derived constructor to customize starting values.
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
-    DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-    DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+        DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	UINT imguiDescriptorOffset = 0;//changes every time i add a texture on the text heap, i added a condition in buildtexture() for that
+	UINT imguiDescriptorOffset = 0;//changes every time i add a texture on the text heap, i added a condition
+	                                  //in buildtexture() for that
 
 	friend class WindowsWindow;
 };
-	
-	
+
+ 
+
+	//TO BE DEFINED IN CLIENT APPLICATION
+	D3DApp* CreateApplication();
 
 }

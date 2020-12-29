@@ -33,6 +33,7 @@ namespace Hulk
 		
 		return wn;
 	}
+	
 
 	LRESULT WindowsWindow::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {   
@@ -75,11 +76,11 @@ namespace Hulk
 				D3DApp::GetApp()->mAppPaused = false;
 				D3DApp::GetApp()->mMinimized = false;
 				D3DApp::GetApp()->mMaximized = true;
-				//ImGui_ImplDX12_InvalidateDeviceObjects();
+				ImGui_ImplDX12_InvalidateDeviceObjects();
 				D3DApp::GetApp()->OnResize();
 				WindowResizeEvent e(m_Data.Width,m_Data.Height);
 				HK_TRACE(e);
-				//ImGui_ImplDX12_CreateDeviceObjects();
+				ImGui_ImplDX12_CreateDeviceObjects();
 			}
 			else if( wParam == SIZE_RESTORED )
 			{
@@ -89,11 +90,11 @@ namespace Hulk
 				{
 					D3DApp::GetApp()->mAppPaused = false;
 					D3DApp::GetApp()->mMinimized = false;
-					//ImGui_ImplDX12_InvalidateDeviceObjects();
+					ImGui_ImplDX12_InvalidateDeviceObjects();
 					D3DApp::GetApp()->OnResize();
 					WindowResizeEvent e(m_Data.Width,m_Data.Height);
 					HK_TRACE(e);
-					//ImGui_ImplDX12_CreateDeviceObjects();
+					ImGui_ImplDX12_CreateDeviceObjects();
 				}
 
 				// Restoring from maximized state?
@@ -101,11 +102,11 @@ namespace Hulk
 				{
 					D3DApp::GetApp()->mAppPaused = false;
 					D3DApp::GetApp()->mMaximized = false;
-					//ImGui_ImplDX12_InvalidateDeviceObjects();
+					ImGui_ImplDX12_InvalidateDeviceObjects();
 					D3DApp::GetApp()->OnResize();
 					WindowResizeEvent e(m_Data.Width,m_Data.Height);
 		            HK_TRACE(e);
-					//ImGui_ImplDX12_CreateDeviceObjects();
+					ImGui_ImplDX12_CreateDeviceObjects();
 				}
 				else if( D3DApp::GetApp()->mResizing )
 				{
@@ -120,11 +121,11 @@ namespace Hulk
 				}
 				else // API call such as SetWindowPos or mSwapChain->SetFullscreenState.
 				{
-					//ImGui_ImplDX12_InvalidateDeviceObjects();
+					ImGui_ImplDX12_InvalidateDeviceObjects();
 					D3DApp::GetApp()->OnResize();
 					WindowResizeEvent e(m_Data.Width,m_Data.Height);
 					HK_TRACE(e);
-					//ImGui_ImplDX12_CreateDeviceObjects();
+					ImGui_ImplDX12_CreateDeviceObjects();
 				}
 			}
 		}
@@ -144,8 +145,9 @@ namespace Hulk
 		D3DApp::GetApp()->mAppPaused = false;
 		D3DApp::GetApp()->mResizing  = false;
 		D3DApp::GetApp()->mTimer.Start();
+		ImGui_ImplDX12_InvalidateDeviceObjects();
 		D3DApp::GetApp()->OnResize();
-		
+		ImGui_ImplDX12_CreateDeviceObjects();
 		{
 		WindowResizeEvent e(m_Data.Width,m_Data.Height);
 		 HK_TRACE(e);
@@ -185,7 +187,8 @@ namespace Hulk
 		return 0;
     case WM_KEYUP:
         if(wParam == VK_ESCAPE)
-        {
+        {   WindowCloseEvent we;
+        	HK_TRACE(we);
             PostQuitMessage(0);
         }
         else if((int)wParam == VK_F2)

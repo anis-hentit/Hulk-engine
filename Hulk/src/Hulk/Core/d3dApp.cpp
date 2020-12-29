@@ -18,12 +18,12 @@ using namespace DirectX;
 
 
 
-extern  HULK_API LRESULT im_gui_impl_win32_wnd_proc_handler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 namespace Hulk {
 
 
-	void D3DApp::ImGuiInitialize(HWND hwnd, ID3D12Device * device,int num_frames_in_flight, DXGI_FORMAT rendertargetformart)
+	void D3DApp::ImGuiInitialize(HWND hwnd, ID3D12Device * device,int num_frames_in_flight,
+				         DXGI_FORMAT rendertargetformart)
 {
 
 	auto fonthandle =(CD3DX12_GPU_DESCRIPTOR_HANDLE) mSrvHeap->GetGPUDescriptorHandleForHeapStart();
@@ -35,62 +35,66 @@ namespace Hulk {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	(void)io;
-	
-	ImGui_ImplWin32_Init(hwnd);
-	ImGui_ImplDX12_Init(device, num_frames_in_flight, rendertargetformart, mSrvHeap.Get(), cpuHandle, fonthandle);// the srv heap is unused here ill look into the func definition for more info
+
 	ImGui::StyleColorsDark();
+	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplDX12_Init(device, num_frames_in_flight, rendertargetformart,
+			    mSrvHeap.Get(), cpuHandle, fonthandle);// the srv heap is unused here ill look into the
+                                                   //  func definition for more info
+	
 		
 }
 
 
 	
-D3DApp* D3DApp::mApp = nullptr;
+  D3DApp* D3DApp::mApp = nullptr;
 	
-D3DApp* D3DApp::GetApp()
+  D3DApp* D3DApp::GetApp()
 {
     return mApp;
 }
 
-D3DApp::D3DApp(HINSTANCE hInstance)
-:	mhAppInst(hInstance)
+  D3DApp::D3DApp() 
 {
-	WindowProps wp;
-    // Only one D3DApp can be constructed.
-    assert(mApp == nullptr);
-    mApp = this;
-	wp.mhAppInst = hInstance;
-	mMainWnd = WindowsWindow::Create(wp);
+	// Only one D3DApp can be constructed.
+	assert(mApp == nullptr);
+	mApp = this;
+	
 }
 
-D3DApp::~D3DApp()
+  D3DApp::~D3DApp()
 {
 	if(md3dDevice != nullptr)
 		FlushCommandQueue();
 	
 }
 
-HINSTANCE D3DApp::AppInst()const
+  HINSTANCE D3DApp::AppInst()const
 {
 	return mhAppInst;
 }
-
-Window& D3DApp::MainWnd()const // returns ref to the Window object
+  void D3DApp::SetAppInst(HINSTANCE hInstance)
+{
+	mhAppInst = hInstance;
+}
+	
+  Window& D3DApp::MainWnd()const // returns ref to the Window object
 {
 	return *mMainWnd;
 }
 
-float D3DApp::AspectRatio()const
+  float D3DApp::AspectRatio()const
 {
 	
 	return static_cast<float>(float(mMainWnd->GetWidth()) / (float)mMainWnd->GetHeight());
 }
 
-bool D3DApp::Get4xMsaaState()const
+  bool D3DApp::Get4xMsaaState()const
 {
     return m4xMsaaState;
 }
 
-void D3DApp::Set4xMsaaState(bool value)
+  void D3DApp::Set4xMsaaState(bool value)
 {
     if(m4xMsaaState != value)
     {
@@ -102,8 +106,9 @@ void D3DApp::Set4xMsaaState(bool value)
     }
 }
 
-int D3DApp::Run()
+  int D3DApp::Run()
 {
+	HK_PROFILE_FUNCTION();
 	MSG msg = {0};
  
 	mTimer.Reset();
@@ -140,11 +145,9 @@ int D3DApp::Run()
 	return (int)msg.wParam;
 }
 
-bool D3DApp::Initialize()
+  bool D3DApp::Initialize(HINSTANCE hInstance)
 {
-	Hulk::Log::Init();
-	HK_CORE_INFO("Initialized Log!");
-	
+	mhAppInst = hInstance;
 	//window initialized in constructor
 	InitMainWindow();
 	HK_CORE_INFO("Initialized Main Window!");
@@ -159,7 +162,7 @@ bool D3DApp::Initialize()
 	return true;
 }
  
-void D3DApp::CreateRtvAndDsvDescriptorHeaps()
+  void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 {
     D3D12_DESCRIPTOR_HEAP_DESC rtvHeapDesc;
     rtvHeapDesc.NumDescriptors = SwapChainBufferCount;
@@ -180,7 +183,7 @@ void D3DApp::CreateRtvAndDsvDescriptorHeaps()
 	HK_CORE_INFO("Created rtv and dsv heaps!");
 }
 
-void D3DApp::OnResize()
+  void D3DApp::OnResize()
 {
 	assert(md3dDevice);
 	assert(mSwapChain);
@@ -282,13 +285,15 @@ void D3DApp::OnResize()
 
 
 
-void  HULK_API D3DApp::ImGuiUpdate()
+  void  HULK_API D3DApp::ImGuiUpdate()
 {
+	HK_PROFILE_FUNCTION();
+	
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	
-	ImGui::GetIO();
+	//ImGui::GetIO();
 		
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
@@ -341,12 +346,15 @@ void  HULK_API D3DApp::ImGuiUpdate()
 	}
 
 	bool D3DApp::InitMainWindow()
-{
+{	WindowProps wp;
+  	
+  	wp.mhAppInst = mhAppInst;
+	mMainWnd = WindowsWindow::Create(wp);
 	mMainWnd->Init(mMainWnd->GetWnProps());
 	return true;
 }
 
-bool D3DApp::InitDirect3D()
+  bool D3DApp::InitDirect3D()
 {
 #if defined(DEBUG) || defined(_DEBUG) 
 	// Enable the D3D12 debug layer.
@@ -414,7 +422,7 @@ bool D3DApp::InitDirect3D()
 	return true;
 }
 
-void D3DApp::CreateCommandObjects()
+  void D3DApp::CreateCommandObjects()
 {
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
@@ -440,7 +448,7 @@ void D3DApp::CreateCommandObjects()
 	HK_CORE_INFO("Created command queue,command allocator and command list!");
 }
 
-void D3DApp::CreateSwapChain()
+  void D3DApp::CreateSwapChain()
 {
     // Release the previous swapchain we will be recreating.
     mSwapChain.Reset();
@@ -472,7 +480,7 @@ void D3DApp::CreateSwapChain()
 	HK_CORE_INFO("Created Swap chain!");
 }
 
-void D3DApp::FlushCommandQueue()
+  void D3DApp::FlushCommandQueue()
 {
 	// Advance the fence value to mark commands up to this fence point.
     mCurrentFence++;
@@ -496,12 +504,12 @@ void D3DApp::FlushCommandQueue()
 	}
 }
 
-ID3D12Resource* D3DApp::CurrentBackBuffer()const
+  ID3D12Resource* D3DApp::CurrentBackBuffer()const
 {
 	return mSwapChainBuffer[mCurrBackBuffer].Get();
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView()const
+  D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView()const
 {
 	return CD3DX12_CPU_DESCRIPTOR_HANDLE(
 		mRtvHeap->GetCPUDescriptorHandleForHeapStart(),
@@ -509,12 +517,12 @@ D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::CurrentBackBufferView()const
 		mRtvDescriptorSize);
 }
 
-D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView()const
+  D3D12_CPU_DESCRIPTOR_HANDLE D3DApp::DepthStencilView()const
 {
 	return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
 }
 
-void D3DApp::CalculateFrameStats()
+  void D3DApp::CalculateFrameStats()
 {
 	// Code computes the average frames per second, and also the 
 	// average time it takes to render one frame.  These stats 
@@ -546,7 +554,7 @@ void D3DApp::CalculateFrameStats()
 	}
 }
 
-void D3DApp::LogAdapters()
+  void D3DApp::LogAdapters()
 {
     UINT i = 0;
     IDXGIAdapter* adapter = nullptr;
@@ -584,7 +592,7 @@ void D3DApp::LogAdapters()
     }
 }
 
-void D3DApp::LogAdapterOutputs(IDXGIAdapter* adapter)
+  void D3DApp::LogAdapterOutputs(IDXGIAdapter* adapter)
 {
     UINT i = 0;
     IDXGIOutput* output = nullptr;
@@ -616,7 +624,7 @@ void D3DApp::LogAdapterOutputs(IDXGIAdapter* adapter)
     }
 }
 
-void D3DApp::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
+  void D3DApp::LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format)
 {
     UINT count = 0;
     UINT flags = 0;

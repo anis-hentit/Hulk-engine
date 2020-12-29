@@ -60,10 +60,10 @@ struct RenderItem
 class SandBox : public Hulk::D3DApp
 {
 public:
-	SandBox(HINSTANCE hInstance);
+	SandBox();
 	~SandBox();
 
-	virtual bool Initialize() override;
+	virtual bool Initialize(HINSTANCE hInstance) override;
 
 private:
 	virtual void OnResize()override;
@@ -159,52 +159,14 @@ private:
 
 
 
-
-
-
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
-	PSTR cmdLine, int showCmd)
+D3DApp* Hulk::CreateApplication()
 {
-	// Enable run-time memory check for debug builds.
-#if defined(DEBUG) | defined(_DEBUG)
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+	return new SandBox();
 	
-#endif
-	
-	
-	
-	try
-	{	
-		SandBox theApp(hInstance);
-		
-		if (!theApp.Initialize())
-		{
-			
-			return 0;
-		}
-		 
-		return theApp.Run();
-	}
-	catch (DxException& e)
-	{
-		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
-		
-		return 0;
-	}
 }
 
-
-void Hulk::CreateApplication()
-{
-	WinMain(GetModuleHandle(NULL), NULL, GetCommandLineA(), SW_SHOWNORMAL);
-}
-
-
-
-
-
-SandBox::SandBox(HINSTANCE hInstance)
-	: D3DApp(hInstance)
+SandBox::SandBox()
+	: D3DApp()
 {
 	
 }
@@ -215,11 +177,11 @@ SandBox::~SandBox()
 	
 }
 
-bool SandBox::Initialize()
+bool SandBox::Initialize(HINSTANCE hInstance)
 {
+	HK_PROFILE_FUNCTION();
 	
-	
-	if (!D3DApp::Initialize())
+	if (!D3DApp::Initialize(hInstance))
 		return false;
 	 
 	//Reset the command list to prep for initialization commands
@@ -1139,7 +1101,7 @@ void SandBox::BuildPSO()
 void SandBox::Update(const GameTimer& gt)
 {
 
-	
+	HK_PROFILE_FUNCTION();
 
 	OnKeyboardInput(gt);
 	UpdateCamera(gt);
@@ -1171,7 +1133,7 @@ void SandBox::Update(const GameTimer& gt)
 
 void SandBox::Draw(const GameTimer& gt)
 {
-
+	HK_PROFILE_FUNCTION();
 
 	auto cmdListAlloc = mCurrentFrameResource->CmdListAlloc;
 
@@ -1207,13 +1169,14 @@ void SandBox::Draw(const GameTimer& gt)
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
-
-	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	
+	
+	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	mCommandList->SetGraphicsRootConstantBufferView(2, mCurrentFrameResource->PassCB->Resource()->GetGPUVirtualAddress());
 	
 	DrawRenderItems(mCommandList.Get(), mOpaqueRitems);
 	RenderOverlay(mCommandList.Get());
+	
 	
 
 	// Indicate a state transition on the resource usage.

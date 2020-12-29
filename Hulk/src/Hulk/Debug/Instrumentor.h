@@ -203,7 +203,7 @@ namespace Hulk {
 	}
 }
 
-#define HK_PROFILE 0
+#define HK_PROFILE 1
 #if HK_PROFILE
 	// Resolve which function signature macro will be used. Note that this only
 	// is resolved when the (pre)compiler starts, so the syntax highlighting
@@ -226,10 +226,10 @@ namespace Hulk {
 		#define HK_FUNC_SIG "HK_FUNC_SIG unknown!"
 	#endif
 
-	#define HK_PROFILE_BEGIN_SESSION(name, filepath) ::Hazel::Instrumentor::Get().BeginSession(name, filepath)
-	#define HK_PROFILE_END_SESSION() ::Hazel::Instrumentor::Get().EndSession()
-	#define HK_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::Hazel::InstrumentorUtils::CleanupOutputString(name, "__cdecl ");\
-											   ::Hazel::InstrumentationTimer timer##line(fixedName##line.Data)
+	#define HK_PROFILE_BEGIN_SESSION(name, filepath) ::Hulk::Instrumentor::Get().BeginSession(name, filepath)
+	#define HK_PROFILE_END_SESSION() ::Hulk::Instrumentor::Get().EndSession()
+	#define HK_PROFILE_SCOPE_LINE2(name, line) constexpr auto fixedName##line = ::Hulk::InstrumentorUtils::CleanupOutputString(name, "__cdecl ");\
+											   ::Hulk::InstrumentationTimer timer##line(fixedName##line.Data)
 	#define HK_PROFILE_SCOPE_LINE(name, line) HK_PROFILE_SCOPE_LINE2(name, line)
 	#define HK_PROFILE_SCOPE(name) HK_PROFILE_SCOPE_LINE(name, __LINE__)
 	#define HK_PROFILE_FUNCTION() HK_PROFILE_SCOPE(HK_FUNC_SIG)
