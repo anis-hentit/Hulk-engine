@@ -202,7 +202,9 @@ struct HULK_API MeshGeometry
 
 	D3D12_VERTEX_BUFFER_VIEW VertexBufferView()const
 	{
-		if(VertexBufferGPU == nullptr) MessageBox(0, L"Vertex buffer pointer is null", 0, 0);
+		if(VertexBufferGPU == nullptr) 
+			MessageBox(0, L"Vertex buffer pointer is null", 0, 0);
+		
 		D3D12_VERTEX_BUFFER_VIEW vbv;
 		vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
 		vbv.StrideInBytes = VertexByteStride;

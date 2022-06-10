@@ -15,3 +15,4 @@
 #include"Hulk/Core/d3dApp.h"
 #include"Hulk/Core/Log.h"
 #include "Hulk/Core/EntryPoint.h"
+#include "Waves.h"

@@ -128,6 +128,7 @@ protected:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mRtvHeap;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mDsvHeap;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> mSrvHeap;
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> ImguiSrvHeap;
 
     D3D12_VIEWPORT mScreenViewport; 
     D3D12_RECT mScissorRect;
@@ -135,6 +136,10 @@ protected:
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
 	UINT mCbvSrvUavDescriptorSize = 0;
+
+
+	 int SceneIndex = 0; //scene switcher slider imgui
+	 bool mIsWireframe = false;
 
 	// Derived class should set these in derived constructor to customize starting values.
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;

@@ -14,8 +14,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	
 #endif
-	
-		
 	try
 	{	
 		auto theApp = Hulk::CreateApplication();

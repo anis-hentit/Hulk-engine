@@ -88,18 +88,25 @@ private:
 	void BuildShadersAndInputLayout();
 	void BuildShapeGeometry();
 	void BuildSkullGeo();
+	void BuildLandGeo();
+	void BuildWaveGeo();
+	void BuildBoxGeo();
 	void BuildPSO();
 	void BuildFrameResources();
 	void BuildRenderItems();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<std::unique_ptr<RenderItem>>& ritems);
 	void CalculateNormals();
+
+	float GetHillsHeight(float x, float z) const;
+	XMFLOAT3 GetHillsNormal(float x, float z)const;
 
 	void OnKeyboardInput(const Hulk::GameTimer& gt);
 	void UpdateCamera(const Hulk::GameTimer& gt);
 	void UpdateMainPassCB(const Hulk::GameTimer& gt);
 	void UpdateObjectCBs(Hulk::GameTimer const & gt);
 	void UpdateMaterialCB(const GameTimer& gt);
-
+	void UpdateWaves(const GameTimer& gt);
+	void AnimateMaterials(const GameTimer& gt);
 
 private:
 	ComPtr<ID3D12DescriptorHeap> mCbvHeap;
@@ -114,8 +121,8 @@ private:
 
 
 	// List of all the render items.
-	std::vector<std::unique_ptr<RenderItem>> mAllRitems;
-	
+	std::vector<std::unique_ptr<RenderItem>> mAllRitems;//Scene Index 0
+	std::vector<std::unique_ptr<RenderItem>> mAllRitems1;//Scene Index 0
 
 	std::unordered_map<std::string, std::unique_ptr<Hulk::MeshGeometry>> mGeometries;
 	std::unordered_map<std::string, std::unique_ptr<Hulk::Material>> mMaterials;
@@ -135,13 +142,15 @@ private:
 	UINT mMaterialCbvOffset = 0;//not used anymore changed it
 
 	
-	bool mIsWireframe = false;
 
 	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4X4 mView = MathHelper::Identity4x4();
 	XMFLOAT4X4 mProj = MathHelper::Identity4x4();
-	XMMATRIX lightRotMat = XMMatrixIdentity();;
-
+	XMMATRIX lightRotMat = XMMatrixIdentity();
+	
+	float mSunTheta = 1.25f*XM_PI;
+	float mSunPhi = XM_PIDIV4;
+	
 	float mTheta = 1.5f*XM_PI;
 	float mPhi = XM_PIDIV4;
 	float mRadius = 5.0f;
@@ -149,6 +158,9 @@ private:
 	
 	int mCurrentFrameResourceIndex = 0;
 	FrameResource* mCurrentFrameResource = nullptr;
+
+	RenderItem* mWavesRitem = nullptr;
+	std::unique_ptr<Waves> mWaves;
 
 	POINT mLastMousePos;
 
@@ -187,15 +199,20 @@ bool SandBox::Initialize(HINSTANCE hInstance)
 	//Reset the command list to prep for initialization commands
 	ThrowIfFailed(mCommandList->Reset(mDirectCmdListAlloc.Get(), nullptr));
 	
+	mWaves = std::make_unique<Waves>(128, 128, 1.0f, 0.03f, 4.0f, 0.2f);//init the waves
+
 	BuildTextures();
 	BuildRootSignature();
 	BuildShadersAndInputLayout();
 	BuildMaterials();
+	BuildLandGeo();
 	BuildShapeGeometry();
+	BuildWaveGeo();
+	BuildBoxGeo();
 	BuildSkullGeo();
 	BuildRenderItems();
 	BuildFrameResources();
-	BuildDescriptorHeaps();//at this moment used for srvs for textures and one last srv for imgui
+	BuildDescriptorHeaps();//at this moment used for srvs for textures and one other separate heap for one srv for imgui
 	BuildShaderResourcesViews();
 	//BuildSamplerViews(); using static samplers
 	BuildPSO();
@@ -264,7 +281,7 @@ void SandBox::OnMouseMove(WPARAM btnState, int x, int y)
 		mRadius += dx - dy;
 
 		// Restrict the radius.
-		mRadius = MathHelper::Clamp(mRadius, 3.0f, 40.0f);
+		mRadius = MathHelper::Clamp(mRadius, 3.0f, 70.0f);
 	}
 
 	mLastMousePos.x = x;
@@ -276,9 +293,13 @@ void SandBox::OnMouseMove(WPARAM btnState, int x, int y)
 
 void SandBox::BuildMaterials()
 {
+
+	int MatCBIndex = 0;
+
+
 	auto bricks0 = std::make_unique<Material>();
 	bricks0->Name = "bricks";
-	bricks0->MatCBIndex = 0;
+	bricks0->MatCBIndex = MatCBIndex;
 	bricks0->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(bricks0->Name)));// there is no function to get index from unordered map so i use this trick to get the index to use to get the srv in the heap.
 	bricks0->DiffuseAlbedo = XMFLOAT4(Colors::ForestGreen);
 	bricks0->FresnelR0 = XMFLOAT3(0.02f, 0.02f, 0.02f);
@@ -286,16 +307,16 @@ void SandBox::BuildMaterials()
 	
 	auto tile0 = std::make_unique<Material>();
 	tile0->Name = "Tile";
-	tile0->MatCBIndex = 1;
+	tile0->MatCBIndex = ++MatCBIndex;
 	tile0->DiffuseSrvHeapIndex = static_cast<int>( distance(mTextures.begin(), mTextures.find(tile0->Name)));
 	tile0->DiffuseAlbedo = XMFLOAT4(Colors::LightGray);
 	tile0->FresnelR0 = XMFLOAT3(0.02f, 0.02f, 0.02f);
 	tile0->Roughness = 0.2f;
-	//XMStoreFloat4x4(&tile0->MatTransform, XMMatrixScaling(2.0f, 2.0f, 1.0f)); can transform text with matTransform matrix too
+	//XMStoreFloat4x4(&tile0->MatTransform, XMMatrixScaling(2.0f, 2.0f, 1.0f)); //can transform text with matTransform matrix too
 	
 	 auto stoneMat = std::make_unique<Material>();
 	 stoneMat ->Name = "stone";
-	 stoneMat ->MatCBIndex = 2;
+	 stoneMat ->MatCBIndex = ++MatCBIndex;
 	 stoneMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(stoneMat->Name)));
 	 stoneMat ->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	 stoneMat ->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
@@ -303,18 +324,47 @@ void SandBox::BuildMaterials()
 
 	 auto skullMat = std::make_unique<Material>();
 	 skullMat ->Name = "bricks";
-	 skullMat ->MatCBIndex = 3;
+	 skullMat ->MatCBIndex = ++MatCBIndex;
 	 skullMat ->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(skullMat->Name)));
 	 skullMat ->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	 skullMat ->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
 	 skullMat ->Roughness = 0.3f;
 	
+
+	 auto GrassMat = std::make_unique<Material>();
+	 GrassMat->Name = "grass";
+	 GrassMat->MatCBIndex = ++MatCBIndex;
+	 GrassMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(GrassMat->Name)));
+	 GrassMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);;
+	 GrassMat->FresnelR0 = XMFLOAT3(0.01f, 0.01f, 0.01f);
+	 GrassMat->Roughness = 0.0f;
+
+	 // This is not a good water material definition, but we do not have all the rendering
+	// tools we need (transparency, environment reflection), so we fake it for now.
+	 auto waterMat = std::make_unique<Material>();
+	 waterMat->Name = "water";
+	 waterMat->MatCBIndex = ++MatCBIndex;
+	 waterMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(waterMat->Name)));
+	 waterMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	 waterMat->FresnelR0 = XMFLOAT3(0.2f, 0.2f, 0.2f);
+	 waterMat->Roughness = 0.0f;
+
+	 auto wireFenceMat = std::make_unique<Material>();
+	 wireFenceMat->Name = "wirefence";
+	 wireFenceMat->MatCBIndex = ++MatCBIndex;
+	 wireFenceMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(wireFenceMat->Name)));;
+	 wireFenceMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	 wireFenceMat->FresnelR0 = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	 wireFenceMat->Roughness = 0.25f;
+
+
 	mMaterials["bricks"] = std::move(bricks0);
 	mMaterials["stone"] = std::move(stoneMat);
 	mMaterials["tile"] = std::move(tile0);
 	mMaterials["skull"] = std::move(skullMat);
-	
-
+	mMaterials["grass"] = std::move(GrassMat);
+	mMaterials["water"] = std::move(waterMat);
+	mMaterials["wirefence"] = std::move(wireFenceMat);
 }
 
 void SandBox::BuildTextures()
@@ -343,13 +393,38 @@ void SandBox::BuildTextures()
 		mCommandList.Get(), stoneTex->Filename.c_str(),
 		stoneTex->Resource, stoneTex->UploadHeap));
 
+	//HK_INFO(stoneTex->Resource->GetDesc().Format); wanted to check which bc format was the texture compressed to
 	mTextures[stoneTex->Name] = std::move(stoneTex);
 
-	
-	
-	
-	if (mTextures.size() > 0)//check if there is textures so i can offset imgui srv in the heap 
-		imguiDescriptorOffset = mTextures.size();
+	auto GrassTex = std::make_unique<Texture>();
+	GrassTex->Name = "grass";
+	GrassTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\grass.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), GrassTex->Filename.c_str(),
+		GrassTex->Resource, GrassTex->UploadHeap));
+
+	mTextures[GrassTex->Name] = std::move(GrassTex);
+
+	auto waterTex = std::make_unique<Texture>();
+	waterTex->Name = "water";
+	waterTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\water1.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), waterTex->Filename.c_str(),
+		waterTex->Resource, waterTex->UploadHeap));
+
+	mTextures[waterTex->Name] = std::move(waterTex);
+
+
+	auto fenceTex = std::make_unique<Texture>();
+	fenceTex->Name = "wirefence";
+	fenceTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\WoodCrate01.dds";
+	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
+		mCommandList.Get(), fenceTex->Filename.c_str(),
+		fenceTex->Resource, fenceTex->UploadHeap));
+
+	mTextures[fenceTex->Name] = std::move(fenceTex);
+
+	HK_INFO("Loaded textures!");
 }
 
 
@@ -362,10 +437,15 @@ void SandBox::BuildDescriptorHeaps()
 	if (mTextures.size() > 0)
 		numDescriptors = mTextures.size();
 	
-
+	D3D12_DESCRIPTOR_HEAP_DESC ImguiSrvHeapDesc{}; //separate srv heap for imgui
+	ImguiSrvHeapDesc.NumDescriptors =  1;
+	ImguiSrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	ImguiSrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	ImguiSrvHeapDesc.NodeMask = 0;
+	ThrowIfFailed(md3dDevice->CreateDescriptorHeap(&ImguiSrvHeapDesc, IID_PPV_ARGS(&ImguiSrvHeap)));
 
 	D3D12_DESCRIPTOR_HEAP_DESC SrvHeapDesc{};
-	SrvHeapDesc.NumDescriptors = numDescriptors + 1;// +1 for the imgui view
+	SrvHeapDesc.NumDescriptors = numDescriptors;
 	SrvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 	SrvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	SrvHeapDesc.NodeMask = 0;
@@ -494,12 +574,14 @@ void SandBox::BuildRootSignature()
 
 	CD3DX12_ROOT_SIGNATURE_DESC rootSigDesc(5, slotRootParameter, (UINT)staticSamplers.size(), staticSamplers.data(), D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT); //root signature description
 	
-	ComPtr<ID3DBlob> serializedRootSig = nullptr;//this will reference temperarly memory for the actual root signature
+	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
-	//the call to D3D12SerializeRootSignature reserves memory for the root signature and return information 
-	    //about that memory into the output parameter seralizedRootSig(it calculates memory needed by checking
-	      //into the rootSigDesc parameter which is a description of our root sig it will go check from there
-	      //the size of slotRootParameter in this exemple.
+
+	/*	This root signature description will then be serialized with D3D12SerializeRootSignature function, which will create a corresponding binary blob.
+		The blob can then be used as input of ID3D12Device::CreateRootSignature to finally create the ID3D12RootSignature referenced object.
+		Note: the binary blob is made to store the root signature in permanent memory, e.g. in shader cache, so once it has been computed,
+		it can be loaded on next applications run without the need of recomputing it again! but here im not cashing it so im just serializing everytime i start the app*/
+
 	HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
 		                                     serializedRootSig.GetAddressOf(),
 		                                     errorBlob.ReleaseAndGetAddressOf());
@@ -702,7 +784,9 @@ void SandBox::BuildSkullGeo()
 		
 		fin >> skullet[i].Pos.x >> skullet[i].Pos.y >> skullet[i].Pos.z;
 
-		fin >> skullet[i].Normal.x >> skullet[i].Normal.y >> skullet[i].Normal.z;
+		fin >> skullet[i].Normal.x >> skullet[i].Normal.y >> skullet[i].Normal.z; 
+																	
+		// dont have texture coord for skull :(
 
 
 
@@ -744,58 +828,262 @@ void SandBox::BuildSkullGeo()
 	
 }
 
+void SandBox::BuildLandGeo()
+{
+	GeometryGenerator Geogen;
+	GeometryGenerator::MeshData Grid = Geogen.CreateGrid(160.0f,160.0f,50.0f,50.0f);
+
+
+	std::vector<Vertex> vertices(Grid.Vertices.size());
+
+	for (size_t i = 0; i < Grid.Vertices.size(); i++) 
+	{
+		auto& p = Grid.Vertices[i].Position;
+		vertices[i].Pos = p;
+		vertices[i].Pos.y = GetHillsHeight(p.x, p.z);
+		vertices[i].Normal = GetHillsNormal(p.x,p.z);
+		vertices[i].TexCord = Grid.Vertices[i].TexC;
+		
+
+	}
+
+	const UINT VbBytesize = (UINT)vertices.size() * sizeof(Vertex);
+
+	std::vector<std::uint16_t> indices = Grid.GetIndices16();
+
+	const UINT IndexBufferByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "LandGeo";
+
+	ThrowIfFailed(D3DCreateBlob(VbBytesize, geo->VertexBufferCPU.GetAddressOf()));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), VbBytesize);
+
+	ThrowIfFailed(D3DCreateBlob(IndexBufferByteSize, geo->IndexBufferCPU.GetAddressOf()));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), IndexBufferByteSize);
+
+	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), vertices.data(), VbBytesize, geo->VertexBufferUploader);
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(), mCommandList.Get(), indices.data(), IndexBufferByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = VbBytesize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = IndexBufferByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.BaseVertexLocation = 0;
+	submesh.StartIndexLocation = 0;
+	submesh.IndexCount = (UINT)indices.size();
+
+	geo->DrawArgs["Gridg"] = submesh;
+	mGeometries["LandGeo"] = std::move(geo);
+
+
+
+}
+
+void SandBox::BuildWaveGeo()
+{
+	std::vector<std::uint16_t> indices(3 * mWaves->TriangleCount()); // 3 indices per face
+	assert(mWaves->VertexCount() < 0x0000ffff);
+
+	// Iterate over each quad.
+	int m = mWaves->RowCount();
+	int n = mWaves->ColumnCount();
+	int k = 0;
+	for (int i = 0; i < m - 1; ++i)
+	{
+		for (int j = 0; j < n - 1; ++j)
+		{
+			indices[k] = i * n + j;
+			indices[k + 1] = i * n + j + 1;
+			indices[k + 2] = (i + 1) * n + j;
+
+			indices[k + 3] = (i + 1) * n + j;
+			indices[k + 4] = i * n + j + 1;
+			indices[k + 5] = (i + 1) * n + j + 1;
+
+			k += 6; // next quad
+		}
+	}
+
+	UINT vbByteSize = mWaves->VertexCount() * sizeof(Vertex);
+	UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "WaterGeo";
+
+	// Set dynamically.
+	geo->VertexBufferCPU = nullptr;
+	geo->VertexBufferGPU = nullptr;
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["GridW"] = submesh;
+
+	mGeometries["WaterGeo"] = std::move(geo);
+}
+
+void SandBox::BuildBoxGeo()
+{
+	GeometryGenerator Geogen;
+	GeometryGenerator::MeshData box = Geogen.CreateBox(8.0f, 8.0f, 8.0f, 3.0f);
+
+	std::vector<Vertex> vertices(box.Vertices.size());
+
+	for (size_t i = 0; i < box.Vertices.size(); ++i)
+	{
+		auto& p = box.Vertices[i].Position;
+		vertices[i].Pos = p;
+		vertices[i].Normal = box.Vertices[i].Normal;
+		vertices[i].TexCord = box.Vertices[i].TexC;
+	}
+
+	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
+
+	std::vector<std::uint16_t> indices = box.GetIndices16();
+	const UINT ibByteSize = (UINT)indices.size() * sizeof(std::uint16_t);
+
+	auto geo = std::make_unique<MeshGeometry>();
+	geo->Name = "BoxGeo";
+
+	ThrowIfFailed(D3DCreateBlob(vbByteSize, &geo->VertexBufferCPU));
+	CopyMemory(geo->VertexBufferCPU->GetBufferPointer(), vertices.data(), vbByteSize);
+
+	ThrowIfFailed(D3DCreateBlob(ibByteSize, &geo->IndexBufferCPU));
+	CopyMemory(geo->IndexBufferCPU->GetBufferPointer(), indices.data(), ibByteSize);
+
+	geo->VertexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), vertices.data(), vbByteSize, geo->VertexBufferUploader);
+
+	geo->IndexBufferGPU = d3dUtil::CreateDefaultBuffer(md3dDevice.Get(),
+		mCommandList.Get(), indices.data(), ibByteSize, geo->IndexBufferUploader);
+
+	geo->VertexByteStride = sizeof(Vertex);
+	geo->VertexBufferByteSize = vbByteSize;
+	geo->IndexFormat = DXGI_FORMAT_R16_UINT;
+	geo->IndexBufferByteSize = ibByteSize;
+
+	SubmeshGeometry submesh;
+	submesh.IndexCount = (UINT)indices.size();
+	submesh.StartIndexLocation = 0;
+	submesh.BaseVertexLocation = 0;
+
+	geo->DrawArgs["box"] = submesh;
+
+	mGeometries["BoxGeo"] = std::move(geo);
+
+}
+
 void SandBox::BuildFrameResources() 
 
 {
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
-		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(), 1, (UINT)mAllRitems.size(), (UINT)mMaterials.size()));
+		mFrameResources.push_back(std::make_unique<FrameResource>(md3dDevice.Get(), 1, (UINT)mAllRitems.size()+(UINT)mAllRitems1.size(), (UINT)mMaterials.size(), mWaves->VertexCount()));
 	}
 
 
 }
 void SandBox::BuildRenderItems()
 {
+	int ObCBIndex = 0;
+
+	// Land Grid Render Item
+	auto landRitem = std::make_unique<RenderItem>();
+	landRitem->World = MathHelper::Identity4x4();
+	XMStoreFloat4x4(&landRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
+	landRitem->ObjCBIndex = ObCBIndex;
+	landRitem->Geo = mGeometries["LandGeo"].get();
+	landRitem->mMaterial = mMaterials["grass"].get();
+	landRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	landRitem->IndexCount = landRitem->Geo->DrawArgs["Gridg"].IndexCount;
+	landRitem->StartIndexLocation = landRitem->Geo->DrawArgs["Gridg"].StartIndexLocation;
+	landRitem->BaseVertexLocation = landRitem->Geo->DrawArgs["Gridg"].BaseVertexLocation;
+
+	mAllRitems1.push_back(std::move(landRitem));
+
+
+	auto waterRitem = std::make_unique<RenderItem>();
+	waterRitem->World = MathHelper::Identity4x4();
+	XMStoreFloat4x4(&waterRitem->TexTransform, XMMatrixScaling(8.0f, 8.0f, 1.0f));
+	waterRitem->ObjCBIndex = ++ObCBIndex;
+	waterRitem->Geo = mGeometries["WaterGeo"].get();
+	waterRitem->mMaterial = mMaterials["water"].get();
+	waterRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	waterRitem->IndexCount = waterRitem->Geo->DrawArgs["GridW"].IndexCount;
+	waterRitem->StartIndexLocation = waterRitem->Geo->DrawArgs["GridW"].StartIndexLocation;
+	waterRitem->BaseVertexLocation = waterRitem->Geo->DrawArgs["GridW"].BaseVertexLocation;
+
+	mWavesRitem = waterRitem.get();
+	mAllRitems1.push_back(std::move(waterRitem));
+
+
+	auto LboxRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&LboxRitem->World, XMMatrixTranslation(3.0f, 6.0f, -8.0f));
+	LboxRitem->ObjCBIndex = ++ObCBIndex;
+	LboxRitem->mMaterial = mMaterials["wirefence"].get();
+	LboxRitem->Geo = mGeometries["BoxGeo"].get();
+	LboxRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	LboxRitem->IndexCount = LboxRitem->Geo->DrawArgs["box"].IndexCount;
+	LboxRitem->StartIndexLocation = LboxRitem->Geo->DrawArgs["box"].StartIndexLocation;
+	LboxRitem->BaseVertexLocation = LboxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
 	
-	
+	mAllRitems1.push_back(std::move(LboxRitem));
+
+
 	auto skullRitem = std::make_unique<RenderItem>();
 	skullRitem->World = MathHelper::Identity4x4();
 	XMStoreFloat4x4(&skullRitem->World, XMMatrixScaling(0.5f, 0.5f, 0.5f) * XMMatrixTranslation(0.0f, 2.0f, 0.0f));
-	skullRitem->ObjCBIndex = 0;
+	skullRitem->ObjCBIndex = ++ObCBIndex;
 	skullRitem->Geo = mGeometries["skullGeo"].get();
 	skullRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	skullRitem->IndexCount = skullRitem->Geo->DrawArgs["skull"].IndexCount;
 	skullRitem->StartIndexLocation = skullRitem->Geo->DrawArgs["skull"].StartIndexLocation;
 	skullRitem->BaseVertexLocation = skullRitem->Geo->DrawArgs["skull"].BaseVertexLocation;
 	skullRitem->mMaterial = mMaterials["skull"].get();
-	//skullRitem->mMaterial->DiffuseSrvHeapIndex = 0;
+
 	mAllRitems.push_back(std::move(skullRitem));
 
 	//Box render item
 	auto boxRitem = std::make_unique<RenderItem>();
 	XMStoreFloat4x4(&boxRitem->World, XMMatrixScaling(2.0f, 2.0f, 2.0f) * XMMatrixTranslation(0.0f, 0.5f, 0.0f) * XMMatrixRotationY(0.45f));
-	boxRitem->ObjCBIndex = 1;
+	boxRitem->ObjCBIndex = ++ObCBIndex;
 	boxRitem->Geo = mGeometries["shapeGeo"].get();
 	boxRitem->mMaterial = mMaterials["bricks"].get();
 	boxRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	boxRitem->IndexCount = boxRitem->Geo->DrawArgs["box"].IndexCount;
 	boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation;
 	boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
-	//boxRitem->mMaterial->DiffuseSrvHeapIndex = 1;
+	
 	mAllRitems.push_back(std::move(boxRitem));
 	
 	//Grid Render Item
 	auto gridRitem = std::make_unique<RenderItem>();
 	gridRitem->World = MathHelper::Identity4x4();
 	XMStoreFloat4x4(&gridRitem->TexTransform, XMMatrixScaling(5.0f, 5.0f, 1.0f));
-	gridRitem->ObjCBIndex = 2;
+	gridRitem->ObjCBIndex = ++ObCBIndex;
 	gridRitem->Geo = mGeometries["shapeGeo"].get();
 	gridRitem->mMaterial = mMaterials["tile"].get();
 	gridRitem->PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	gridRitem->IndexCount = gridRitem->Geo->DrawArgs["grid"].IndexCount;
 	gridRitem->StartIndexLocation = gridRitem->Geo->DrawArgs["grid"].StartIndexLocation;
 	gridRitem->BaseVertexLocation = gridRitem->Geo->DrawArgs["grid"].BaseVertexLocation;
-	//gridRitem->mMaterial->DiffuseSrvHeapIndex = 0;
+	
 	mAllRitems.push_back(std::move(gridRitem));
 
 	
@@ -803,7 +1091,7 @@ void SandBox::BuildRenderItems()
 
 	// left and right cones and spheres (5 each) so we need 4*5 views in the heap 
 	     //    + 2 for the grid and box so a total of 22 views in the heap
-	UINT objCBIndex = 3;
+	UINT objCBIndex = ++ObCBIndex;
 	for (int i = 0; i < 5; ++i)
 	{
 		auto leftCylRitem = std::make_unique<RenderItem>();
@@ -825,7 +1113,7 @@ void SandBox::BuildRenderItems()
 		leftCylRitem->IndexCount = leftCylRitem->Geo->DrawArgs["cylinder"].IndexCount;
 		leftCylRitem->StartIndexLocation = leftCylRitem->Geo->DrawArgs["cylinder"].StartIndexLocation;
 		leftCylRitem->BaseVertexLocation = leftCylRitem->Geo->DrawArgs["cylinder"].BaseVertexLocation;
-		//leftCylRitem->mMaterial->DiffuseSrvHeapIndex = 1;
+		
 
 		XMStoreFloat4x4(&rightCylRitem->World, leftCylWorld);
 		rightCylRitem->ObjCBIndex = objCBIndex++;
@@ -835,7 +1123,7 @@ void SandBox::BuildRenderItems()
 		rightCylRitem->IndexCount = rightCylRitem->Geo->DrawArgs["cylinder"].IndexCount;
 		rightCylRitem->StartIndexLocation = rightCylRitem->Geo->DrawArgs["cylinder"].StartIndexLocation;
 		rightCylRitem->BaseVertexLocation = rightCylRitem->Geo->DrawArgs["cylinder"].BaseVertexLocation;
-		//rightCylRitem->mMaterial->DiffuseSrvHeapIndex = 1;
+		
 		
 		XMStoreFloat4x4(&leftSphereRitem->World, leftSphereWorld);
 		leftSphereRitem->ObjCBIndex = objCBIndex++;
@@ -845,7 +1133,7 @@ void SandBox::BuildRenderItems()
 		leftSphereRitem->IndexCount = leftSphereRitem->Geo->DrawArgs["sphere"].IndexCount;
 		leftSphereRitem->StartIndexLocation = leftSphereRitem->Geo->DrawArgs["sphere"].StartIndexLocation;
 		leftSphereRitem->BaseVertexLocation = leftSphereRitem->Geo->DrawArgs["sphere"].BaseVertexLocation;
-		//leftSphereRitem->mMaterial->DiffuseSrvHeapIndex = 2;
+		
 
 		XMStoreFloat4x4(&rightSphereRitem->World, rightSphereWorld);
 		rightSphereRitem->ObjCBIndex = objCBIndex++;
@@ -855,7 +1143,7 @@ void SandBox::BuildRenderItems()
 		rightSphereRitem->IndexCount = rightSphereRitem->Geo->DrawArgs["sphere"].IndexCount;
 		rightSphereRitem->StartIndexLocation = rightSphereRitem->Geo->DrawArgs["sphere"].StartIndexLocation;
 		rightSphereRitem->BaseVertexLocation = rightSphereRitem->Geo->DrawArgs["sphere"].BaseVertexLocation;
-		//rightSphereRitem->mMaterial->DiffuseSrvHeapIndex = 2;
+		
 
 		mAllRitems.push_back(std::move(leftCylRitem));
 		mAllRitems.push_back(std::move(rightCylRitem));
@@ -869,7 +1157,7 @@ void SandBox::BuildRenderItems()
 
 	
 }
-void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::vector<RenderItem*>& ritems)
+void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::vector<std::unique_ptr<RenderItem>>& ritems)
 {
 
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -878,11 +1166,13 @@ void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::ve
 	auto MatCB = mCurrentFrameResource->MaterialCB->Resource();
 	auto CB = mCurrentFrameResource->ObjectCB->Resource();
 	
+
 	
+
 	// For each render item...
 	for (size_t i = 0; i < ritems.size(); ++i)
 	{
-		auto ri = ritems[i];
+		auto ri = ritems[i].get();
 
 		cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
 		cmdList->IASetIndexBuffer(&ri->Geo->IndexBufferView());
@@ -909,30 +1199,52 @@ void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::ve
 
 void SandBox::CalculateNormals()
 {
-
+	// TO DO for object that dont have normale (dont have them yet)
 }
+
+float SandBox::GetHillsHeight(float x, float z) const
+{
+
+	return 0.3f*(z*sinf(0.1f*x)+ x*cosf(0.1f*z));
+}
+
+XMFLOAT3 SandBox::GetHillsNormal(float x, float z) const
+{
+	// n = (-df/dx, 1, -df/dz)
+	XMFLOAT3 n(
+		-0.03f * z * cosf(0.1f * x) - 0.3f * cosf(0.1f * z),
+		1.0f,
+		-0.3f * sinf(0.1f * x) + 0.03f * x * sinf(0.1f * z));
+
+	XMVECTOR unitNormal = XMVector3Normalize(XMLoadFloat3(&n));
+	XMStoreFloat3(&n, unitNormal);
+
+	return n;
+}
+
+
 
 void SandBox::OnKeyboardInput(const GameTimer& gt)
 {
-	float dt = gt.DeltaTime();
+	float dt = sinf(gt.TotalTime());
 
 	if (GetAsyncKeyState(VK_LEFT) & 0x8000)
-		lightRotMat = XMMatrixRotationRollPitchYaw(0.0f ,gt.TotalTime(),0.0f);
+		lightRotMat = XMMatrixRotationRollPitchYaw(0.0f ,-dt,0.0f);
 
 	if (GetAsyncKeyState(VK_RIGHT) & 0x8000)
-		lightRotMat = XMMatrixRotationRollPitchYaw(0.0f, -gt.TotalTime(), 0.0f);
+		lightRotMat = XMMatrixRotationRollPitchYaw(0.0f, dt, 0.0f);
 
 
 	if (GetAsyncKeyState(VK_UP) & 0x8000)
-		lightRotMat = XMMatrixRotationRollPitchYaw(sin(gt.TotalTime()),0.0f, 0.0f);
+		lightRotMat = XMMatrixRotationRollPitchYaw(dt,0.0f, 0.0f);
 
 	if (GetAsyncKeyState(VK_DOWN) & 0x8000)
-		lightRotMat = XMMatrixRotationRollPitchYaw(sin(-gt.TotalTime()), 0.0f, 0.0f);
+		lightRotMat = XMMatrixRotationRollPitchYaw(-dt, 0.0f, 0.0f);
 
 	if (GetAsyncKeyState('1') & 0x8000)
 		mIsWireframe = true;
-	else
-		mIsWireframe = false;
+	
+	
 }
 
 void SandBox::UpdateCamera(const GameTimer & gt)
@@ -972,6 +1284,7 @@ void SandBox::UpdateMainPassCB(const GameTimer & gt)
 	XMStoreFloat4x4(&mMainPassCB.InvProj, XMMatrixTranspose(invProj));
 	XMStoreFloat4x4(&mMainPassCB.ViewProj, XMMatrixTranspose(viewProj));
 	XMStoreFloat4x4(&mMainPassCB.InvViewProj, XMMatrixTranspose(invViewProj));
+
 	mMainPassCB.EyePosW = mEyePos;
 	mMainPassCB.RenderTargetSize = XMFLOAT2((float)mMainWnd->GetWidth(), (float)mMainWnd->GetHeight());
 	mMainPassCB.InvRenderTargetSize = XMFLOAT2(1.0f / mMainWnd->GetWidth(), 1.0f / mMainWnd->GetHeight());
@@ -981,12 +1294,25 @@ void SandBox::UpdateMainPassCB(const GameTimer & gt)
 	mMainPassCB.DeltaTime = gt.DeltaTime();
 
 	mMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-	mMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
-	mMainPassCB.Lights[0].Strength = { 0.8f, 0.8f, 0.8f };
-	mMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[1].Direction = { 0.57735f, -0.57735f, 0.57735f };
 	mMainPassCB.Lights[1].Strength = { 0.4f, 0.4f, 0.4f };
+
+	mMainPassCB.Lights[0].Direction = {sinf(gt.TotalTime()) , -0.57735f, sinf(gt.TotalTime())};
+	mMainPassCB.Lights[0].Strength = { 0.8f, 0.8f, 0.8f };
+
 	mMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
 	mMainPassCB.Lights[2].Strength = { 0.2f, 0.2f, 0.2f };
+
+	XMVECTOR lightt;
+	
+	lightt = XMLoadFloat3(&mMainPassCB.Lights[1].Direction);
+	XMStoreFloat3(&mMainPassCB.Lights[1].Direction, XMVector3Transform(lightt,lightRotMat));
+
+	 lightt = XMLoadFloat3(&mMainPassCB.Lights[0].Direction);
+	XMStoreFloat3(&mMainPassCB.Lights[0].Direction, XMVector3Transform(lightt,lightRotMat));
+
+	 lightt = XMLoadFloat3(&mMainPassCB.Lights[2].Direction);
+	XMStoreFloat3(&mMainPassCB.Lights[2].Direction, XMVector3Transform(lightt,lightRotMat));
 	
 	
 	auto currPassCB = mCurrentFrameResource->PassCB.get();
@@ -996,8 +1322,6 @@ void SandBox::UpdateMainPassCB(const GameTimer & gt)
 
 void SandBox::UpdateObjectCBs(GameTimer const & gt)
 {
-
-	
 
 	auto currObjectCB = mCurrentFrameResource->ObjectCB.get();
 
@@ -1014,6 +1338,26 @@ void SandBox::UpdateObjectCBs(GameTimer const & gt)
 			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
 			XMStoreFloat4x4(&objConstants.TexTransform,XMMatrixTranspose(TexTrans));
 			
+			currObjectCB->CopyData(e->ObjCBIndex, objConstants);
+			e->NumFramesDirty--;
+		}
+	}
+
+
+	//if (SceneIndex == 0) only do it when rendering wave scene ( but for some reason i get lil bit more performance when not using the if statement)
+	for (auto& e : mAllRitems1) // also update the wave scene obj constant buffers
+	{
+		// Only update the cbuffer data if the constants have changed.  
+		// This needs to be tracked per frame resource.
+		if (e->NumFramesDirty > 0)
+		{
+			XMMATRIX world = XMLoadFloat4x4(&e->World);
+			XMMATRIX TexTrans = XMLoadFloat4x4((&e->TexTransform));
+
+			ObjectConstants objConstants;
+			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
+			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(TexTrans));
+
 			currObjectCB->CopyData(e->ObjCBIndex, objConstants);
 			e->NumFramesDirty--;
 		}
@@ -1044,6 +1388,71 @@ void SandBox::UpdateMaterialCB(const GameTimer & gt)
 
 		}
 	}
+}
+
+void SandBox::UpdateWaves(const GameTimer& gt)
+{
+	// Every quarter second, generate a random wave.
+	static float t_base = 0.0f;
+	if ((mTimer.TotalTime() - t_base) >= 0.25f)
+	{
+		t_base += 0.25f;
+
+		int i = MathHelper::Rand(4, mWaves->RowCount() - 5);
+		int j = MathHelper::Rand(4, mWaves->ColumnCount() - 5);
+
+		float r = MathHelper::RandF(0.2f, 0.5f);
+
+		mWaves->Disturb(i, j, r);
+	}
+
+	// Update the wave simulation.
+	mWaves->Update(gt.DeltaTime());
+
+	// Update the wave vertex buffer with the new solution.
+	auto currWavesVB = mCurrentFrameResource->WavesVB.get();
+	for (int i = 0; i < mWaves->VertexCount(); ++i)
+	{
+		Vertex v;
+
+		v.Pos = mWaves->Position(i);
+		v.Normal = mWaves->Normal(i);
+
+		// Derive tex-coords from position by 
+		// mapping [-w/2,w/2] --> [0,1]
+		v.TexCord.x = 0.5f + v.Pos.x / mWaves->Width();
+		v.TexCord.y = 0.5f - v.Pos.z / mWaves->Depth();
+
+		currWavesVB->CopyData(i, v);
+	}
+
+	// Set the dynamic VB of the wave renderitem to the current frame VB.
+	mWavesRitem->Geo->VertexBufferGPU = currWavesVB->Resource();
+
+}
+
+void SandBox::AnimateMaterials(const GameTimer& gt)
+{
+	// Scroll the water material texture coordinates.
+	auto waterMat = mMaterials["water"].get();
+
+	float& tu = waterMat->MatTransform(3, 0);
+	float& tv = waterMat->MatTransform(3, 1);
+
+	tu += 0.1f * gt.DeltaTime();
+	tv += 0.02f * gt.DeltaTime();
+
+	if (tu >= 1.0f)
+		tu -= 1.0f;
+
+	if (tv >= 1.0f)
+		tv -= 1.0f;
+
+	waterMat->MatTransform(3, 0) = tu;
+	waterMat->MatTransform(3, 1) = tv;
+
+	// Material has changed, so need to update cbuffer.
+	waterMat->NumFramesDirty = gNumFrameResources;
 }
 
 
@@ -1121,6 +1530,11 @@ void SandBox::Update(const GameTimer& gt)
 
 	}
 
+	if (SceneIndex == 0) { // only do it when wer rendering wave scene 
+		AnimateMaterials(gt);
+		UpdateWaves(gt);
+	}
+	
 	UpdateObjectCBs(gt);
 	UpdateMaterialCB(gt);
 	UpdateMainPassCB(gt);
@@ -1159,13 +1573,17 @@ void SandBox::Draw(const GameTimer& gt)
 	mCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
 		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
+
+
+	// Specify the buffers we are going to render to.
+	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+
 	// Clear the back buffer and depth buffer.
 	
 	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), clear_color, 0, nullptr);//  
 	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 
-	// Specify the buffers we are going to render to.
-	mCommandList->OMSetRenderTargets(1, &CurrentBackBufferView(), true, &DepthStencilView());
+	
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { mSrvHeap.Get() };
 	mCommandList->SetDescriptorHeaps(_countof(descriptorHeaps), descriptorHeaps);
@@ -1174,7 +1592,14 @@ void SandBox::Draw(const GameTimer& gt)
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	mCommandList->SetGraphicsRootConstantBufferView(2, mCurrentFrameResource->PassCB->Resource()->GetGPUVirtualAddress());
 	
-	DrawRenderItems(mCommandList.Get(), mOpaqueRitems);
+	if(SceneIndex == 0)
+		DrawRenderItems(mCommandList.Get(), mAllRitems1);
+	
+	else if (SceneIndex == 1)
+		DrawRenderItems(mCommandList.Get(), mAllRitems);
+
+	ID3D12DescriptorHeap* ImguidescriptorHeaps[] = { ImguiSrvHeap.Get() };// separate srv heap for imgui
+	mCommandList->SetDescriptorHeaps(_countof(ImguidescriptorHeaps), ImguidescriptorHeaps);
 	RenderOverlay(mCommandList.Get());
 	
 	
@@ -1201,4 +1626,6 @@ void SandBox::Draw(const GameTimer& gt)
 	// Because we are on the GPU timeline, the new fence point won't be 
 	// set until the GPU finishes processing all the commands prior to this Signal().
 	mCommandQueue->Signal(mFence.Get(), mCurrentFence);
+
+	
 }

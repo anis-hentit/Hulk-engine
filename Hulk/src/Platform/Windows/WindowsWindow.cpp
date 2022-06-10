@@ -180,7 +180,7 @@ namespace Hulk
 	case WM_LBUTTONUP:
 	case WM_MBUTTONUP:
 	case WM_RBUTTONUP:
-		D3DApp::GetApp()->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));// the sandbox version gets called because i created a sandbox app object in the winmain func :D
+		D3DApp::GetApp()->OnMouseUp(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));// the sandbox version gets called because i created a sandbox app object in the winmain func (entry point) :D
 		return 0;
 	case WM_MOUSEMOVE:
 		D3DApp::GetApp()->OnMouseMove(wParam, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
@@ -205,7 +205,7 @@ namespace Hulk
 	{
 		HK_PROFILE_FUNCTION();
 		
-		assert(mWindowsWnObject == nullptr);
+		assert(mWindowsWnObject == nullptr);//not rly needed but w/e
 		WindowsWindow::mWindowsWnObject = this;
 		mWndProps = props;
 		
@@ -222,21 +222,19 @@ namespace Hulk
 
 	void WindowsWindow::OnUpdate(MSG msg )
 	{
-		
-		
-		
             TranslateMessage( &msg );
             DispatchMessage( &msg );
-		
 	}
 
-	bool WindowsWindow::Init(const WindowProps& props)
+	bool WindowsWindow::Init(const WindowProps& props)// could also use the mWndProps attribute of the class directly here instead of calling the getter in d3dApp.cpp
 	{
+
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 		m_Data.mhAppInst = (HINSTANCE) props.mhAppInst;
-		//HK_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+		
+		HK_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 		
 		
 		WNDCLASS wc;

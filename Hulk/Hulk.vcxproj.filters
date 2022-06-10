@@ -40,6 +40,15 @@
     <Filter Include="Hulk\src\Windows">
       <UniqueIdentifier>{f230343b-33df-48b8-accb-70840fbdc0da}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Hulk\src\Animations">
+      <UniqueIdentifier>{18d8aa17-8652-40ba-9878-8c5dc7d50002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk\src\Animations\Header Files">
+      <UniqueIdentifier>{01ed91e7-d373-4845-977f-97eb93819c85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Hulk\src\Animations\Source Files">
+      <UniqueIdentifier>{e55926b4-ed47-451c-a05a-0b8bb8db953c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Hulk\Core\Base.h">
@@ -114,6 +123,9 @@
     <ClInclude Include="src\hkpch.h">
       <Filter>Hulk</Filter>
     </ClInclude>
+    <ClInclude Include="Waves.h">
+      <Filter>Hulk\src\Animations\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Shaders\color.hlsl">
@@ -159,6 +171,9 @@
     </ClCompile>
     <ClCompile Include="src\hkpch.cpp">
       <Filter>Hulk</Filter>
+    </ClCompile>
+    <ClCompile Include="Waves.cpp">
+      <Filter>Hulk\src\Animations</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

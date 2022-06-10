@@ -87,15 +87,19 @@ VertexOut VS(VertexIn vin)
 	float4 posW = mul(float4(vin.PosL, 1.0f), gWorld);
 	
 	vout.PosW = posW.xyz; // get the world pos for eye-point distance calculation
-    //normals are vectors so they are not affected by translation
-	// Assumes uniform scaling; otherwise, need to use inverse-transpose of world matrix.( just need to transpose it without the translation part (from 4x4 to 3x3) because the rot matrix and scale matrix are orthogonal
-	                                                                                     //if not we zero out the translation part before multiplying by the view and rot matrices) the inverse of an orthogonal matrix is its transposed self
+   
+	
+	//normals are vectors so they are not affected by translation
+	// Assumes uniform scaling; otherwise, need to use inverse-transpose of world matrix.
+	// ( just need to transpose it without the translation part (from 4x4 to 3x3) because the rot matrix and scale matrix are orthogonal
+    //if not we zero out the translation part before multiplying by the view and rot matrices) the inverse of an orthogonal matrix is its transposed self
 	vout.NormalW = mul(vin.NormalL,(float3x3)gWorld);
 	
 
 	// Transform to homogeneous clip space.
 	vout.PosH = mul(posW, gViewProj);
-	// this output texCoord per vertex for interpolation in rasterizer
+
+	// this outputs texCoord per vertex for interpolation in rasterizer
 	float4 texC = mul(float4(vin.TexCord, 0.0f, 1.0f), gTexTransform);
 	vout.TexCord = mul(texC, gMatTransform).xy;
 

@@ -8,7 +8,6 @@
 #include "../Events/ApplicationEvent.h"
 #include "../Debug//Instrumentor.h"
 #include "Log.h"
-#include"stdlib.h"
 #include "../../Platform/Windows/WindowsWindow.h"
 
 
@@ -26,9 +25,9 @@ namespace Hulk {
 				         DXGI_FORMAT rendertargetformart)
 {
 
-	auto fonthandle =(CD3DX12_GPU_DESCRIPTOR_HANDLE) mSrvHeap->GetGPUDescriptorHandleForHeapStart();
+	auto fonthandle =(CD3DX12_GPU_DESCRIPTOR_HANDLE) ImguiSrvHeap->GetGPUDescriptorHandleForHeapStart();
 	fonthandle.Offset(imguiDescriptorOffset, mCbvSrvUavDescriptorSize);
-	auto cpuHandle = (CD3DX12_CPU_DESCRIPTOR_HANDLE)mSrvHeap->GetCPUDescriptorHandleForHeapStart();
+	auto cpuHandle = (CD3DX12_CPU_DESCRIPTOR_HANDLE)ImguiSrvHeap->GetCPUDescriptorHandleForHeapStart();
 	cpuHandle.Offset(imguiDescriptorOffset, mCbvSrvUavDescriptorSize);
 
 	IMGUI_CHECKVERSION();
@@ -39,7 +38,7 @@ namespace Hulk {
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX12_Init(device, num_frames_in_flight, rendertargetformart,
-			    mSrvHeap.Get(), cpuHandle, fonthandle);// the srv heap is unused here ill look into the
+			    ImguiSrvHeap.Get(), cpuHandle, fonthandle);// the srv heap is unused here ill look into the
                                                    //  func definition for more info
 	
 		
@@ -148,16 +147,18 @@ namespace Hulk {
   bool D3DApp::Initialize(HINSTANCE hInstance)
 {
 	mhAppInst = hInstance;
-	//window initialized in constructor
+  	
+	
 	InitMainWindow();
 	HK_CORE_INFO("Initialized Main Window!");
 	
 	if(!InitDirect3D())
 		return false;
-	
+	// Do the initial resize code.
+	OnResize();
+
 	HK_CORE_INFO("Initialized Direct3D!");
-    // Do the initial resize code.
-     OnResize();
+    
 
 	return true;
 }
@@ -178,8 +179,10 @@ namespace Hulk {
     dsvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
     dsvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	dsvHeapDesc.NodeMask = 0;
+
     ThrowIfFailed(md3dDevice->CreateDescriptorHeap(
         &dsvHeapDesc, IID_PPV_ARGS(mDsvHeap.GetAddressOf())));
+
 	HK_CORE_INFO("Created rtv and dsv heaps!");
 }
 
@@ -211,7 +214,7 @@ namespace Hulk {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE rtvHeapHandle(mRtvHeap->GetCPUDescriptorHandleForHeapStart());
 	for (UINT i = 0; i < SwapChainBufferCount; i++)
 	{
-		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(&mSwapChainBuffer[i])));
+		ThrowIfFailed(mSwapChain->GetBuffer(i, IID_PPV_ARGS(mSwapChainBuffer[i].GetAddressOf())));
 		md3dDevice->CreateRenderTargetView(mSwapChainBuffer[i].Get(), nullptr, rtvHeapHandle);
 		rtvHeapHandle.Offset(1, mRtvDescriptorSize);
 	}
@@ -299,35 +302,26 @@ namespace Hulk {
 		ImGui::ShowDemoWindow(&show_demo_window);
 
 	{
-		static float f = 0.0f;
-		static int counter = 0;
+		
+		
 
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
 		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &show_another_window);
+		ImGui::Checkbox("WireFrame Mode", &mIsWireframe);      // Edit bools storing our window open/close state
+		
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderInt("Switch scenes", &SceneIndex, 0, 1); 
+		
 		ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
 		
 
-		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
+		
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 	}
-	if (show_another_window)
-	{
-		ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			show_another_window = false;
-		ImGui::End();
-	}
+	
 }
 
 	void D3DApp::RenderOverlay(ID3D12GraphicsCommandList* cmdlist)
@@ -346,11 +340,14 @@ namespace Hulk {
 	}
 
 	bool D3DApp::InitMainWindow()
-{	WindowProps wp;
+{	
+	// only windows api window for now-------
+	WindowProps wp;
   	
   	wp.mhAppInst = mhAppInst;
 	mMainWnd = WindowsWindow::Create(wp);
 	mMainWnd->Init(mMainWnd->GetWnProps());
+
 	return true;
 }
 
@@ -364,6 +361,7 @@ namespace Hulk {
 		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
 		debugController->EnableDebugLayer();
 		
+		HK_CORE_INFO("Debug Layer Enabled");
 	}
 #endif
 
@@ -427,7 +425,7 @@ namespace Hulk {
 	D3D12_COMMAND_QUEUE_DESC queueDesc = {};
 	queueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	queueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&mCommandQueue)));
+	ThrowIfFailed(md3dDevice->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(mCommandQueue.GetAddressOf())));
 
 	ThrowIfFailed(md3dDevice->CreateCommandAllocator(
 		D3D12_COMMAND_LIST_TYPE_DIRECT,
@@ -559,6 +557,7 @@ namespace Hulk {
     UINT i = 0;
     IDXGIAdapter* adapter = nullptr;
     std::vector<IDXGIAdapter*> adapterList;
+
     while(mdxgiFactory->EnumAdapters(i, &adapter) != DXGI_ERROR_NOT_FOUND)
     {
         DXGI_ADAPTER_DESC desc;
@@ -648,8 +647,16 @@ namespace Hulk {
 		
         ::OutputDebugString(text.c_str());
 
-    	
-    	
+		auto input = text.c_str();
+		size_t size = (wcslen(input) + 1) * sizeof(wchar_t);
+		char* buffer = new char[size];
+
+		std::wcstombs(buffer, input, size);
+
+		HK_CORE_INFO("Display Mode");
+		HK_CORE_INFO(buffer);
+
+		delete[] buffer;
     	
     }
 }
