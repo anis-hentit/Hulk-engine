@@ -1,6 +1,9 @@
 #pragma once
 #include <cstdint>
 
+
+// for future integration of glfw
+
 namespace Hulk
 {
 	using KeyCode = uint16_t;

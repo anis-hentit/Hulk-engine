@@ -1,6 +1,3 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
-
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 //#define SOL_CXX_LUA
 
@@ -54,7 +51,13 @@ struct RenderItem
 	int BaseVertexLocation = 0;
 };
 
-
+enum class RenderLayer : int
+{
+	Opaque = 0,
+	Transparent,
+	AlphaTested,
+	Count
+};
 
 
 class SandBox : public Hulk::D3DApp
@@ -94,7 +97,7 @@ private:
 	void BuildPSO();
 	void BuildFrameResources();
 	void BuildRenderItems();
-	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<std::unique_ptr<RenderItem>>& ritems);
+	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>&ritems);
 	void CalculateNormals();
 
 	float GetHillsHeight(float x, float z) const;
@@ -134,7 +137,8 @@ private:
 	
 
 	// Render items divided by PSO.
-	std::vector<RenderItem*> mOpaqueRitems;
+	std::vector<RenderItem*> mRitemLayerLand[(int)RenderLayer::Count];// wave and land demo
+	std::vector<RenderItem*> mRitemLayerShapes[(int)RenderLayer::Count];// shapes and skull demo
 
 	PassConstants mMainPassCB;
 
@@ -165,7 +169,7 @@ private:
 	POINT mLastMousePos;
 
 	
-	float skull_albedo[4] = { 0.941176534f, 0.9725481f, 1.000000000f, 1.000000000f };
+	
 	
 };
 
@@ -274,14 +278,14 @@ void SandBox::OnMouseMove(WPARAM btnState, int x, int y)
 	else if ((btnState & MK_RBUTTON) != 0)
 	{
 		// Make each pixel correspond to 0.005 unit in the scene.
-		float dx = 0.005f*static_cast<float>(x - mLastMousePos.x);
-		float dy = 0.005f*static_cast<float>(y - mLastMousePos.y);
+		float dx = 0.2f*static_cast<float>(x - mLastMousePos.x);
+		float dy = 0.2f*static_cast<float>(y - mLastMousePos.y);
 
 		// Update the camera radius based on input.
 		mRadius += dx - dy;
 
 		// Restrict the radius.
-		mRadius = MathHelper::Clamp(mRadius, 3.0f, 70.0f);
+		mRadius = MathHelper::Clamp(mRadius, 5.0f, 150.0f);
 	}
 
 	mLastMousePos.x = x;
@@ -320,7 +324,7 @@ void SandBox::BuildMaterials()
 	 stoneMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(stoneMat->Name)));
 	 stoneMat ->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	 stoneMat ->FresnelR0 = XMFLOAT3(0.05f, 0.05f, 0.05f);
-	 stoneMat ->Roughness = 0.3f;
+	 stoneMat ->Roughness = 0.4f;
 
 	 auto skullMat = std::make_unique<Material>();
 	 skullMat ->Name = "bricks";
@@ -345,7 +349,7 @@ void SandBox::BuildMaterials()
 	 waterMat->Name = "water";
 	 waterMat->MatCBIndex = ++MatCBIndex;
 	 waterMat->DiffuseSrvHeapIndex = static_cast<int>(distance(mTextures.begin(), mTextures.find(waterMat->Name)));
-	 waterMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	 waterMat->DiffuseAlbedo = XMFLOAT4(1.0f, 1.0f, 1.0f, 0.3f);
 	 waterMat->FresnelR0 = XMFLOAT3(0.2f, 0.2f, 0.2f);
 	 waterMat->Roughness = 0.0f;
 
@@ -417,7 +421,7 @@ void SandBox::BuildTextures()
 
 	auto fenceTex = std::make_unique<Texture>();
 	fenceTex->Name = "wirefence";
-	fenceTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\WoodCrate01.dds";
+	fenceTex->Filename = L"E:\\Desktop\\Hulk engine\\Textures\\WireFence.dds";
 	ThrowIfFailed(DirectX::CreateDDSTextureFromFile12(md3dDevice.Get(),
 		mCommandList.Get(), fenceTex->Filename.c_str(),
 		fenceTex->Resource, fenceTex->UploadHeap));
@@ -599,8 +603,28 @@ void SandBox::BuildRootSignature()
 
 void SandBox::BuildShadersAndInputLayout()
 {
-	mvsByteCode = d3dUtil::CompileShader(L"E:\\Desktop\\Hulk engine\\Shaders\\color.hlsl", nullptr, "VS", "vs_5_0");
-	mpsByteCode = d3dUtil::CompileShader(L"E:\\Desktop\\Hulk engine\\Shaders\\color.hlsl", nullptr, "PS", "ps_5_0");
+
+
+	const D3D_SHADER_MACRO defines[] =
+	{
+		"FOG" , "0"
+		,NULL,NULL
+
+	};
+
+	
+	const D3D_SHADER_MACRO alphaTestDefines[] =
+	{
+		"FOG", "1",
+		"ALPHA_TEST", "1",
+		NULL, NULL
+	};
+
+
+	mShaders["Opaque_VS"] = d3dUtil::CompileShader(L"E:\\Desktop\\Hulk engine\\Shaders\\color.hlsl", nullptr, "VS", "vs_5_0");;
+	mShaders["Opaque_PS"] = d3dUtil::CompileShader(L"E:\\Desktop\\Hulk engine\\Shaders\\color.hlsl", defines, "PS", "ps_5_0");
+	mShaders["Alpha_PS"] = d3dUtil::CompileShader(L"E:\\Desktop\\Hulk engine\\Shaders\\color.hlsl", alphaTestDefines, "PS", "ps_5_0");
+
 
 	mInputLayout =
 	{ 
@@ -611,7 +635,7 @@ void SandBox::BuildShadersAndInputLayout()
 
 	 
 
-
+	HK_INFO("Initialized Shaders");
 
 }
 
@@ -1015,7 +1039,23 @@ void SandBox::BuildRenderItems()
 	landRitem->StartIndexLocation = landRitem->Geo->DrawArgs["Gridg"].StartIndexLocation;
 	landRitem->BaseVertexLocation = landRitem->Geo->DrawArgs["Gridg"].BaseVertexLocation;
 
-	mAllRitems1.push_back(std::move(landRitem));
+	mRitemLayerLand[(int)RenderLayer::Opaque].push_back(landRitem.get());
+	mAllRitems.push_back(std::move(landRitem));
+
+
+	auto LboxRitem = std::make_unique<RenderItem>();
+	XMStoreFloat4x4(&LboxRitem->World, XMMatrixTranslation(3.0f, -1.0f, -8.0f));
+	LboxRitem->ObjCBIndex = ++ObCBIndex;
+	LboxRitem->mMaterial = mMaterials["wirefence"].get();
+	LboxRitem->Geo = mGeometries["BoxGeo"].get();
+	LboxRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+	LboxRitem->IndexCount = LboxRitem->Geo->DrawArgs["box"].IndexCount;
+	LboxRitem->StartIndexLocation = LboxRitem->Geo->DrawArgs["box"].StartIndexLocation;
+	LboxRitem->BaseVertexLocation = LboxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
+
+	mRitemLayerLand[(int)RenderLayer::AlphaTested].push_back(LboxRitem.get());
+
+	mAllRitems.push_back(std::move(LboxRitem));
 
 
 	auto waterRitem = std::make_unique<RenderItem>();
@@ -1030,20 +1070,12 @@ void SandBox::BuildRenderItems()
 	waterRitem->BaseVertexLocation = waterRitem->Geo->DrawArgs["GridW"].BaseVertexLocation;
 
 	mWavesRitem = waterRitem.get();
-	mAllRitems1.push_back(std::move(waterRitem));
+
+	mRitemLayerLand[(int)RenderLayer::Transparent].push_back(mWavesRitem);
+	mAllRitems.push_back(std::move(waterRitem));
 
 
-	auto LboxRitem = std::make_unique<RenderItem>();
-	XMStoreFloat4x4(&LboxRitem->World, XMMatrixTranslation(3.0f, 6.0f, -8.0f));
-	LboxRitem->ObjCBIndex = ++ObCBIndex;
-	LboxRitem->mMaterial = mMaterials["wirefence"].get();
-	LboxRitem->Geo = mGeometries["BoxGeo"].get();
-	LboxRitem->PrimitiveType = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-	LboxRitem->IndexCount = LboxRitem->Geo->DrawArgs["box"].IndexCount;
-	LboxRitem->StartIndexLocation = LboxRitem->Geo->DrawArgs["box"].StartIndexLocation;
-	LboxRitem->BaseVertexLocation = LboxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
 	
-	mAllRitems1.push_back(std::move(LboxRitem));
 
 
 	auto skullRitem = std::make_unique<RenderItem>();
@@ -1057,6 +1089,7 @@ void SandBox::BuildRenderItems()
 	skullRitem->BaseVertexLocation = skullRitem->Geo->DrawArgs["skull"].BaseVertexLocation;
 	skullRitem->mMaterial = mMaterials["skull"].get();
 
+	mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(skullRitem.get());
 	mAllRitems.push_back(std::move(skullRitem));
 
 	//Box render item
@@ -1070,6 +1103,7 @@ void SandBox::BuildRenderItems()
 	boxRitem->StartIndexLocation = boxRitem->Geo->DrawArgs["box"].StartIndexLocation;
 	boxRitem->BaseVertexLocation = boxRitem->Geo->DrawArgs["box"].BaseVertexLocation;
 	
+	mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(boxRitem.get());
 	mAllRitems.push_back(std::move(boxRitem));
 	
 	//Grid Render Item
@@ -1084,6 +1118,7 @@ void SandBox::BuildRenderItems()
 	gridRitem->StartIndexLocation = gridRitem->Geo->DrawArgs["grid"].StartIndexLocation;
 	gridRitem->BaseVertexLocation = gridRitem->Geo->DrawArgs["grid"].BaseVertexLocation;
 	
+	mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(gridRitem.get());
 	mAllRitems.push_back(std::move(gridRitem));
 
 	
@@ -1145,19 +1180,23 @@ void SandBox::BuildRenderItems()
 		rightSphereRitem->BaseVertexLocation = rightSphereRitem->Geo->DrawArgs["sphere"].BaseVertexLocation;
 		
 
+
+		mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(leftCylRitem.get());
+		mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(rightCylRitem.get());
+		mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(leftSphereRitem.get());
+		mRitemLayerShapes[(int)RenderLayer::Opaque].push_back(rightSphereRitem.get());
+
 		mAllRitems.push_back(std::move(leftCylRitem));
 		mAllRitems.push_back(std::move(rightCylRitem));
 		mAllRitems.push_back(std::move(leftSphereRitem));
 		mAllRitems.push_back(std::move(rightSphereRitem));
 	}
 	
-	// All the render items in this demo are opaque.
-	for (auto& e : mAllRitems)
-		mOpaqueRitems.push_back(e.get());
+	
 
 	
 }
-void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::vector<std::unique_ptr<RenderItem>>& ritems)
+void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::vector<RenderItem*>&ritems)
 {
 
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
@@ -1172,7 +1211,7 @@ void SandBox::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::ve
 	// For each render item...
 	for (size_t i = 0; i < ritems.size(); ++i)
 	{
-		auto ri = ritems[i].get();
+		auto ri = ritems[i];
 
 		cmdList->IASetVertexBuffers(0, 1, &ri->Geo->VertexBufferView());
 		cmdList->IASetIndexBuffer(&ri->Geo->IndexBufferView());
@@ -1293,26 +1332,28 @@ void SandBox::UpdateMainPassCB(const GameTimer & gt)
 	mMainPassCB.TotalTime = gt.TotalTime();
 	mMainPassCB.DeltaTime = gt.DeltaTime();
 
-	mMainPassCB.AmbientLight = { 0.25f, 0.25f, 0.35f, 1.0f };
-	mMainPassCB.Lights[1].Direction = { 0.57735f, -0.57735f, 0.57735f };
-	mMainPassCB.Lights[1].Strength = { 0.4f, 0.4f, 0.4f };
+	
 
-	mMainPassCB.Lights[0].Direction = {sinf(gt.TotalTime()) , -0.57735f, sinf(gt.TotalTime())};
-	mMainPassCB.Lights[0].Strength = { 0.8f, 0.8f, 0.8f };
 
+	mMainPassCB.Lights[0].Direction = { 0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[0].Strength = { 0.9f, 0.9f, 0.8f };
+	mMainPassCB.Lights[1].Direction = { -0.57735f, -0.57735f, 0.57735f };
+	mMainPassCB.Lights[1].Strength = { 0.3f, 0.3f, 0.3f };
 	mMainPassCB.Lights[2].Direction = { 0.0f, -0.707f, -0.707f };
-	mMainPassCB.Lights[2].Strength = { 0.2f, 0.2f, 0.2f };
+	mMainPassCB.Lights[2].Strength = { 0.15f, 0.15f, 0.15f };
 
 	XMVECTOR lightt;
-	
+
 	lightt = XMLoadFloat3(&mMainPassCB.Lights[1].Direction);
-	XMStoreFloat3(&mMainPassCB.Lights[1].Direction, XMVector3Transform(lightt,lightRotMat));
+	XMStoreFloat3(&mMainPassCB.Lights[1].Direction, XMVector3Transform(lightt, lightRotMat));
 
-	 lightt = XMLoadFloat3(&mMainPassCB.Lights[0].Direction);
-	XMStoreFloat3(&mMainPassCB.Lights[0].Direction, XMVector3Transform(lightt,lightRotMat));
+	lightt = XMLoadFloat3(&mMainPassCB.Lights[0].Direction);
+	XMStoreFloat3(&mMainPassCB.Lights[0].Direction, XMVector3Transform(lightt, lightRotMat));
 
-	 lightt = XMLoadFloat3(&mMainPassCB.Lights[2].Direction);
-	XMStoreFloat3(&mMainPassCB.Lights[2].Direction, XMVector3Transform(lightt,lightRotMat));
+	lightt = XMLoadFloat3(&mMainPassCB.Lights[2].Direction);
+	XMStoreFloat3(&mMainPassCB.Lights[2].Direction, XMVector3Transform(lightt, lightRotMat));
+
+	
 	
 	
 	auto currPassCB = mCurrentFrameResource->PassCB.get();
@@ -1344,24 +1385,7 @@ void SandBox::UpdateObjectCBs(GameTimer const & gt)
 	}
 
 
-	//if (SceneIndex == 0) only do it when rendering wave scene ( but for some reason i get lil bit more performance when not using the if statement)
-	for (auto& e : mAllRitems1) // also update the wave scene obj constant buffers
-	{
-		// Only update the cbuffer data if the constants have changed.  
-		// This needs to be tracked per frame resource.
-		if (e->NumFramesDirty > 0)
-		{
-			XMMATRIX world = XMLoadFloat4x4(&e->World);
-			XMMATRIX TexTrans = XMLoadFloat4x4((&e->TexTransform));
-
-			ObjectConstants objConstants;
-			XMStoreFloat4x4(&objConstants.World, XMMatrixTranspose(world));
-			XMStoreFloat4x4(&objConstants.TexTransform, XMMatrixTranspose(TexTrans));
-
-			currObjectCB->CopyData(e->ObjCBIndex, objConstants);
-			e->NumFramesDirty--;
-		}
-	}
+	
 }
 
 void SandBox::UpdateMaterialCB(const GameTimer & gt)
@@ -1463,11 +1487,12 @@ void SandBox::BuildPSO()
 	//
 	// PSO for opaque objects.
 	//
+
 	ZeroMemory(&opaquePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	opaquePsoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
 	opaquePsoDesc.pRootSignature = mRootSignature.Get();
-	opaquePsoDesc.VS = { reinterpret_cast<BYTE*>(mvsByteCode->GetBufferPointer()), mvsByteCode->GetBufferSize() };
-	opaquePsoDesc.PS = { reinterpret_cast<BYTE*>(mpsByteCode->GetBufferPointer()), mpsByteCode->GetBufferSize() };
+	opaquePsoDesc.VS = { reinterpret_cast<BYTE*>(mShaders["Opaque_VS"]->GetBufferPointer()),mShaders["Opaque_VS"]->GetBufferSize()};
+	opaquePsoDesc.PS = { reinterpret_cast<BYTE*>(mShaders["Opaque_PS"]->GetBufferPointer()), mShaders["Opaque_PS"]->GetBufferSize() };
 	opaquePsoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	
 	
@@ -1482,15 +1507,65 @@ void SandBox::BuildPSO()
 	opaquePsoDesc.DSVFormat = mDepthStencilFormat;
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaquePsoDesc, IID_PPV_ARGS(&mPSOs["opaque"])));
 
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC wireframePsqoDesc;
+
+	//
+	// PSO for transapent objects.
+	//
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC TransparentPsoDesc = opaquePsoDesc;
+
+
+	// blend equation of d3d12 :  final color = source color X source color Blend factor [ some operation (+,-,max,min) ] destination color X destination color Blend factor.
+	//                            final Alpha = source Alpha x source Alpha blend factor  [ some operation (+,-,max,min) ]  destination Alpha x destination Alpha blend factor.
+	// 
+	// 
+	// side not : for D3D12_BLEND_OP_REV_SUBTRACT the formula for final color is : destination color X destination color Blend factor [-] source color X source color Blend factor.
+	// same thing for final alpha using  D3D12_BLEND_OP_REV_SUBTRACT : destination Alpha x destination Alpha blend factor [-] source Alpha x source Alpha blend factor.
+
+
+	D3D12_RENDER_TARGET_BLEND_DESC blendDesc;
+	blendDesc.BlendEnable = true;
+	blendDesc.LogicOpEnable = false;	// cant use logic operations if tradination blend operations are enabled gotta choose to use one of them.
+
+	blendDesc.SrcBlend = D3D12_BLEND_SRC_ALPHA;//source color blend factor
+	blendDesc.DestBlend = D3D12_BLEND_INV_SRC_ALPHA;//dest color blend factor
+	blendDesc.BlendOp = D3D12_BLEND_OP_ADD;//blend operation used for color
+
+	blendDesc.SrcBlendAlpha = D3D12_BLEND_ONE;		//source Alpha blend factor
+	blendDesc.DestBlendAlpha = D3D12_BLEND_ZERO;  //dest Alpha blend factor
+	blendDesc.BlendOpAlpha = D3D12_BLEND_OP_ADD;  // Alpha blending operation used
+	blendDesc.LogicOp = D3D12_LOGIC_OP_NOOP;
+	blendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	TransparentPsoDesc.BlendState.RenderTarget[0] = blendDesc;
+	
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&TransparentPsoDesc, IID_PPV_ARGS(&mPSOs["transparent"])));
+
+
+	// PSO FOR ALPHA TEST
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC AlphaTestedPsoDesc = opaquePsoDesc;
+
+	AlphaTestedPsoDesc.PS = { reinterpret_cast<BYTE*>(mShaders["Alpha_PS"]->GetBufferPointer()), mShaders["Alpha_PS"]->GetBufferSize() };
+	AlphaTestedPsoDesc.RasterizerState.CullMode = D3D12_CULL_MODE_NONE;
+
+
+
+	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&AlphaTestedPsoDesc, IID_PPV_ARGS(&mPSOs["alphaTested"])));
+
+
 
 	// PSO FOR WIREFRAME
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC wireframePsqoDesc;
+	
+	
 
 	ZeroMemory(&wireframePsqoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	wireframePsqoDesc.InputLayout = { mInputLayout.data(), (UINT)mInputLayout.size() };
 	wireframePsqoDesc.pRootSignature = mRootSignature.Get();
-	wireframePsqoDesc.VS = { reinterpret_cast<BYTE*>(mvsByteCode->GetBufferPointer()), mvsByteCode->GetBufferSize() };
-	wireframePsqoDesc.PS = { reinterpret_cast<BYTE*>(mpsByteCode->GetBufferPointer()), mpsByteCode->GetBufferSize() };
+	wireframePsqoDesc.VS = { reinterpret_cast<BYTE*>(mShaders["Opaque_VS"]->GetBufferPointer()), mShaders["Opaque_VS"]->GetBufferSize() };
+	wireframePsqoDesc.PS = { reinterpret_cast<BYTE*>(mShaders["Opaque_PS"]->GetBufferPointer()), mShaders["Opaque_PS"]->GetBufferSize() };
 	wireframePsqoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 	wireframePsqoDesc.RasterizerState.FillMode = D3D12_FILL_MODE_WIREFRAME;
 	wireframePsqoDesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
@@ -1532,14 +1607,15 @@ void SandBox::Update(const GameTimer& gt)
 
 	if (SceneIndex == 0) { // only do it when wer rendering wave scene 
 		AnimateMaterials(gt);
-		UpdateWaves(gt);
+		//UpdateWaves(gt);
 	}
 	
 	UpdateObjectCBs(gt);
 	UpdateMaterialCB(gt);
 	UpdateMainPassCB(gt);
 	
-
+	if (SceneIndex == 0)
+	UpdateWaves(gt);
 	
 
 }
@@ -1581,7 +1657,7 @@ void SandBox::Draw(const GameTimer& gt)
 	// Clear the back buffer and depth buffer.
 	
 	mCommandList->ClearRenderTargetView(CurrentBackBufferView(), clear_color, 0, nullptr);//  
-	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	mCommandList->ClearDepthStencilView(DepthStencilView(), D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
 	
 
@@ -1592,11 +1668,42 @@ void SandBox::Draw(const GameTimer& gt)
 	mCommandList->SetGraphicsRootSignature(mRootSignature.Get());
 	mCommandList->SetGraphicsRootConstantBufferView(2, mCurrentFrameResource->PassCB->Resource()->GetGPUVirtualAddress());
 	
-	if(SceneIndex == 0)
-		DrawRenderItems(mCommandList.Get(), mAllRitems1);
+	if (SceneIndex == 0)// Land and wave scene
+	{
+		
+		DrawRenderItems(mCommandList.Get(), mRitemLayerLand[(int)RenderLayer::Opaque]);
+
+
+		mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
+		DrawRenderItems(mCommandList.Get(), mRitemLayerLand[(int)RenderLayer::AlphaTested]);
+
+
+		mCommandList->SetPipelineState(mPSOs["transparent"].Get());
+		
+		if (mIsWireframe)
+			mCommandList->SetPipelineState(mPSOs["opaque_wireframe"].Get()); // if we are in wireframe use the opaque wireframe pso (no use in making and using a blending wireframe pso)
+
+		DrawRenderItems(mCommandList.Get(), mRitemLayerLand[(int)RenderLayer::Transparent]);
+
+	}
+		
 	
-	else if (SceneIndex == 1)
-		DrawRenderItems(mCommandList.Get(), mAllRitems);
+	else if (SceneIndex == 1)// shapes and skull scene
+	{
+		
+		DrawRenderItems(mCommandList.Get(), mRitemLayerShapes[(int)RenderLayer::Opaque]);
+
+		mCommandList->SetPipelineState(mPSOs["alphaTested"].Get());
+		DrawRenderItems(mCommandList.Get(), mRitemLayerShapes[(int)RenderLayer::AlphaTested]);
+
+		mCommandList->SetPipelineState(mPSOs["transparent"].Get());
+
+		if (mIsWireframe)
+			mCommandList->SetPipelineState(mPSOs["opaque_wireframe"].Get()); // if we are in wireframe use the opaque wireframe pso (no use in making and using a blending wireframe pso)
+
+		DrawRenderItems(mCommandList.Get(), mRitemLayerShapes[(int)RenderLayer::Transparent]);
+	}
+		
 
 	ID3D12DescriptorHeap* ImguidescriptorHeaps[] = { ImguiSrvHeap.Get() };// separate srv heap for imgui
 	mCommandList->SetDescriptorHeaps(_countof(ImguidescriptorHeaps), ImguidescriptorHeaps);

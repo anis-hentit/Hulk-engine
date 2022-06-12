@@ -1,6 +1,4 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
 
-// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: http://www.viva64.com
 
 #include "hkpch.h"
 #include "d3dApp.h"
@@ -356,6 +354,12 @@ namespace Hulk {
 #if defined(DEBUG) || defined(_DEBUG) 
 	// Enable the D3D12 debug layer.
 	{
+		ComPtr<ID3D12Debug> spDebugController0;
+		ComPtr<ID3D12Debug1> spDebugController1;
+		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&spDebugController0)));
+		ThrowIfFailed(spDebugController0->QueryInterface(IID_PPV_ARGS(&spDebugController1)));
+		spDebugController1->SetEnableGPUBasedValidation(true);
+
 		ComPtr<ID3D12Debug> debugController;
 
 		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));
@@ -365,7 +369,7 @@ namespace Hulk {
 	}
 #endif
 
-	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
+	ThrowIfFailed(CreateDXGIFactory2(DXGI_CREATE_FACTORY_DEBUG,IID_PPV_ARGS(&mdxgiFactory)));
 
 	// Try to create hardware device.
 	HRESULT hardwareResult = D3D12CreateDevice(

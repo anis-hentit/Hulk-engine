@@ -134,6 +134,9 @@
     <FxCompile Include="..\Shaders\LightingUtil.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="..\Shaders\Default.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hulk\Core\d3dApp.cpp">

@@ -36,7 +36,7 @@ struct HULK_API PassConstants
     DirectX::XMFLOAT4X4 ViewProj = MathHelper::Identity4x4();
     DirectX::XMFLOAT4X4 InvViewProj = MathHelper::Identity4x4();
     DirectX::XMFLOAT3 EyePosW = { 0.0f, 0.0f, 0.0f };
-    float cbPerObjectPad1 = 0.0f;
+    float cbPerPassPad1 = 0.0f;
     DirectX::XMFLOAT2 RenderTargetSize = { 0.0f, 0.0f };
     DirectX::XMFLOAT2 InvRenderTargetSize = { 0.0f, 0.0f };
     float NearZ = 0.0f;
@@ -44,6 +44,10 @@ struct HULK_API PassConstants
     float TotalTime = 0.0f;
     float DeltaTime = 0.0f;
 	DirectX::XMFLOAT4 AmbientLight = { 0.5f, 0.5f, 0.5f , 1.0f };
+    DirectX::XMFLOAT4 FogColor = { 0.7f, 0.7f, 0.7f, 1.0f };
+    float FogStart = 5.0f;
+    float FogRange = 150.0f;
+    DirectX::XMFLOAT2 cbPerPassPad2;
 	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
 	// indices [NUM_DIR_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHTS) are point lights;
 	// indices [NUM_DIR_LIGHTS+NUM_POINT_LIGHTS, NUM_DIR_LIGHTS+NUM_POINT_LIGHT+NUM_SPOT_LIGHTS)

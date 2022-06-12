@@ -37,7 +37,7 @@ cbuffer cbPass : register(b2)
 	float4x4 gViewProj;
 	float4x4 gInvViewProj;
 	float3 gEyePosW;
-	float cbPerObjectPad1;
+	float cbPerPassPad1;
 	float2 gRenderTargetSize;
 	float2 gInvRenderTargetSize;
 	float gNearZ;
@@ -45,6 +45,12 @@ cbuffer cbPass : register(b2)
 	float gTotalTime;
 	float gDeltaTime;
 	float4 gAmbientLight;
+
+	float4 gFogColor;
+	float gFogStart;
+	float gFogRange;
+	float2 cbPerPassPad2;
+
 	Light gLights[MaxLights];
 };
 
@@ -89,10 +95,8 @@ VertexOut VS(VertexIn vin)
 	vout.PosW = posW.xyz; // get the world pos for eye-point distance calculation
    
 	
-	//normals are vectors so they are not affected by translation
+	//normals are vectors so they are not affected by translation (so remove translation row) 4x4 -> 3x3
 	// Assumes uniform scaling; otherwise, need to use inverse-transpose of world matrix.
-	// ( just need to transpose it without the translation part (from 4x4 to 3x3) because the rot matrix and scale matrix are orthogonal
-    //if not we zero out the translation part before multiplying by the view and rot matrices) the inverse of an orthogonal matrix is its transposed self
 	vout.NormalW = mul(vin.NormalL,(float3x3)gWorld);
 	
 
@@ -113,8 +117,26 @@ float4 PS(VertexOut pin) : SV_Target
 	pin.NormalW = normalize(pin.NormalW);
 	
     float4 DiffuseAlbedo = gDiffuseMap.Sample(gSamAnisotropicWrap, pin.TexCord) * gDiffuseAlbedo;
+	
+#ifdef ALPHA_TEST
+
+		// Discard pixel if texture alpha < 0.1. We do this test as soon
+		// as possible  in the shader so that we can potentially exit the
+		//shader early, thereby skipping the rest of the shader code.
+	clip(DiffuseAlbedo.a - 0.1);
+
+#endif
+
+
+	
+
 	// Vector from point being lit to eye. 
-	float3 toEyeW = normalize(gEyePosW - pin.PosW);
+	float3 toEyeW = gEyePosW - pin.PosW;
+
+	//distance from point to eye
+	float disToEye = length(toEyeW);
+
+	toEyeW /= disToEye;	//normalize to eye vector for lighting computations
 
 	// Indirect lighting.
 	float4 ambient = gAmbientLight * DiffuseAlbedo;//component wise multiplication so ambient (x1*x2,y1*y2,z1*z2,w1*w2)
@@ -128,6 +150,11 @@ float4 PS(VertexOut pin) : SV_Target
 	
 	float4 litColor = ambient + directLight;
 	
+#ifdef FOG
+	float fogAmount = saturate((disToEye - gFogStart) / gFogRange);
+	litColor = lerp(litColor, gFogColor, fogAmount); // note : we can also clear the back buffer with fogcolor for the fog to show better 
+#endif
+
 	// Common convention to take alpha from diffuse material.
 	litColor.a = DiffuseAlbedo.a;
 	
