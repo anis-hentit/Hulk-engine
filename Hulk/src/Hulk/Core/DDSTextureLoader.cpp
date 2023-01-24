@@ -1286,7 +1286,8 @@ static HRESULT CreateD3DResources12(
 			return hr;
 		}
 		else
-		{
+        {
+            
 			const UINT num2DSubresources = texDesc.DepthOrArraySize * texDesc.MipLevels;
 			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(texture.Get(), 0, num2DSubresources);
 
@@ -1858,7 +1859,8 @@ static HRESULT CreateTextureFromDDS12(
 		);
 
 	if (SUCCEEDED(hr))
-	{
+    {
+        
 		hr = CreateD3DResources12(
 			device, cmdList,
 			resDim, twidth, theight, tdepth,

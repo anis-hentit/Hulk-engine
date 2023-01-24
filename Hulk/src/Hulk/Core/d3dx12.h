@@ -1431,7 +1431,7 @@ inline UINT64 UpdateSubresources(
     UINT64 IntermediateOffset,
     _In_range_(0,D3D12_REQ_SUBRESOURCES) UINT FirstSubresource,
     _In_range_(0,D3D12_REQ_SUBRESOURCES-FirstSubresource) UINT NumSubresources,
-    _In_reads_(NumSubresources) D3D12_SUBRESOURCE_DATA* pSrcData)
+    _In_reads_(NumSubresources) const D3D12_SUBRESOURCE_DATA* pSrcData)
 {
     UINT64 RequiredSize = 0;
     UINT64 MemToAlloc = static_cast<UINT64>(sizeof(D3D12_PLACED_SUBRESOURCE_FOOTPRINT) + sizeof(UINT) + sizeof(UINT64)) * NumSubresources;

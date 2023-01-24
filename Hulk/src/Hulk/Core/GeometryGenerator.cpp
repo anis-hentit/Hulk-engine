@@ -467,8 +467,8 @@ GeometryGenerator::MeshData GeometryGenerator::CreateCylinder(float bottomRadius
 		}
 	}
 
-	BuildCylinderTopCap(bottomRadius, topRadius, height, sliceCount, stackCount, meshData);
-	BuildCylinderBottomCap(bottomRadius, topRadius, height, sliceCount, stackCount, meshData);
+	//BuildCylinderTopCap(bottomRadius, topRadius, height, sliceCount, stackCount, meshData);
+	//BuildCylinderBottomCap(bottomRadius, topRadius, height, sliceCount, stackCount, meshData);
 
     return meshData;
 }

@@ -45,7 +45,7 @@ struct HULK_API PassConstants
     float DeltaTime = 0.0f;
 	DirectX::XMFLOAT4 AmbientLight = { 0.5f, 0.5f, 0.5f , 1.0f };
     DirectX::XMFLOAT4 FogColor = { 0.7f, 0.7f, 0.7f, 1.0f };
-    float FogStart = 5.0f;
+    float FogStart = 30.0f;
     float FogRange = 150.0f;
     DirectX::XMFLOAT2 cbPerPassPad2;
 	// Indices [0, NUM_DIR_LIGHTS) are directional lights;
@@ -59,10 +59,18 @@ struct HULK_API PassConstants
 
 struct HULK_API Vertex
 {
+    Vertex() = default;
+    Vertex(float x, float y, float z, float nx, float ny, float nz, float u, float v) :
+        Pos(x, y, z),
+        Normal(nx, ny, nz),
+        TexCord(u, v) {}
+
 	XMFLOAT3 Pos;
 	XMFLOAT3 Normal;
 	XMFLOAT2 TexCord;
 };
+
+
 
 // Stores the resources needed for the CPU to build the command lists
 // for a frame.  

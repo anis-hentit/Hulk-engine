@@ -127,8 +127,8 @@ namespace Hulk {
 			if( !mAppPaused )
 			{
 				CalculateFrameStats();
-				Update(mTimer);
 				ImGuiUpdate();
+				Update(mTimer);
                 Draw(mTimer);
 				
 			}
@@ -288,13 +288,13 @@ namespace Hulk {
 
   void  HULK_API D3DApp::ImGuiUpdate()
 {
-	HK_PROFILE_FUNCTION();
+	
 	
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 	
-	//ImGui::GetIO();
+	ImGui::GetIO();
 		
 	if (show_demo_window)
 		ImGui::ShowDemoWindow(&show_demo_window);
@@ -354,12 +354,7 @@ namespace Hulk {
 #if defined(DEBUG) || defined(_DEBUG) 
 	// Enable the D3D12 debug layer.
 	{
-		ComPtr<ID3D12Debug> spDebugController0;
-		ComPtr<ID3D12Debug1> spDebugController1;
-		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&spDebugController0)));
-		ThrowIfFailed(spDebugController0->QueryInterface(IID_PPV_ARGS(&spDebugController1)));
-		spDebugController1->SetEnableGPUBasedValidation(true);
-
+		
 		ComPtr<ID3D12Debug> debugController;
 
 		ThrowIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugController)));

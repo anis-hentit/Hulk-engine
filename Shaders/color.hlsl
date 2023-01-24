@@ -124,6 +124,7 @@ float4 PS(VertexOut pin) : SV_Target
 		// as possible  in the shader so that we can potentially exit the
 		//shader early, thereby skipping the rest of the shader code.
 	clip(DiffuseAlbedo.a - 0.1);
+	
 
 #endif
 

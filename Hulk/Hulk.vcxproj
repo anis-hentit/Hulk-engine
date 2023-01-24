@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\Desktop\Hulk engine\Hulk\src;C:\Program Files\Lua\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Desktop\Hulk engine\Hulk\src;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>E:\Desktop\Hulk engine\Hulk\src;C:\Program Files\Lua\include;$(IncludePath)</IncludePath>
@@ -94,11 +94,12 @@
       <PrecompiledHeaderFile>hkpch.h</PrecompiledHeaderFile>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>C:\Program Files\Lua;E:\Desktop\Hulk engine\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>lua.lib;d3d12.lib;dxgi.lib;d3dcompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>E:\Desktop\Hulk engine\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;d3dcompiler.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ProjectReference>
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
@@ -173,22 +174,31 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Core.h" />
+    <ClInclude Include="pch.h" />
     <ClInclude Include="src\hkpch.h" />
     <ClInclude Include="src\Hulk.h" />
     <ClInclude Include="src\Hulk\Core\Base.h" />
     <ClInclude Include="src\Hulk\Core\d3dApp.h" />
     <ClInclude Include="src\Hulk\Core\d3dUtil.h" />
+    <ClInclude Include="src\Hulk\Core\DDS.h" />
     <ClInclude Include="src\Hulk\Core\DDSTextureLoader.h" />
+    <ClInclude Include="src\Hulk\Core\DirectXHelpers.h" />
     <ClInclude Include="src\Hulk\Core\EntryPoint.h" />
     <ClInclude Include="src\Hulk\Core\FrameResource.h" />
     <ClInclude Include="src\Hulk\Core\GameTimer.h" />
     <ClInclude Include="src\Hulk\Core\GeometryGenerator.h" />
+    <ClInclude Include="src\Hulk\Core\GraphicsMemory.h" />
     <ClInclude Include="src\Hulk\Core\KeyCodes.h" />
+    <ClInclude Include="src\Hulk\Core\LinearAllocator.h" />
+    <ClInclude Include="src\Hulk\Core\LoaderHelpers.h" />
     <ClInclude Include="src\Hulk\Core\Log.h" />
     <ClInclude Include="src\Hulk\Core\MathHelper.h" />
     <ClInclude Include="src\Hulk\Core\MouseCodes.h" />
     <ClInclude Include="src\Hulk\Core\PlatformDetection.h" />
+    <ClInclude Include="src\Hulk\Core\PlatformHelpers.h" />
+    <ClInclude Include="src\Hulk\Core\ResourceUploadBatch.h" />
     <ClInclude Include="src\Hulk\Core\UploadBuffer.h" />
+    <ClInclude Include="src\Hulk\Core\WICTextureLoader.h" />
     <ClInclude Include="src\Hulk\Core\Window.h" />
     <ClInclude Include="src\Hulk\Debug\Instrumentor.h" />
     <ClInclude Include="src\Hulk\Events\ApplicationEvent.h" />
@@ -196,6 +206,9 @@
     <ClInclude Include="src\Hulk\Events\KeyEvent.h" />
     <ClInclude Include="src\Hulk\Events\MouseEvent.h" />
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h" />
+    <ClInclude Include="GpuWave.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Waves.h" />
   </ItemGroup>
   <ItemGroup>
@@ -209,6 +222,10 @@
     <FxCompile Include="..\Shaders\LightingUtil.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Shaders\TreeSprite.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
@@ -237,11 +254,18 @@
     <ClCompile Include="src\Hulk\Core\FrameResource.cpp" />
     <ClCompile Include="src\Hulk\Core\GameTimer.cpp" />
     <ClCompile Include="src\Hulk\Core\GeometryGenerator.cpp" />
+    <ClCompile Include="src\Hulk\Core\GraphicsMemory.cpp" />
+    <ClCompile Include="src\Hulk\Core\LinearAllocator.cpp" />
     <ClCompile Include="src\Hulk\Core\Log.cpp" />
     <ClCompile Include="src\Hulk\Core\MathHelper.cpp" />
+    <ClCompile Include="src\Hulk\Core\ResourceUploadBatch.cpp" />
+    <ClCompile Include="src\Hulk\Core\WICTextureLoader.cpp" />
     <ClCompile Include="src\Hulk\Core\Window.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp" />
+    <ClCompile Include="GpuWave.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Waves.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

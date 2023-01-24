@@ -6,6 +6,7 @@
 #include <DirectXColors.h>
 #include "Hulk/Core/d3dUtil.h"
 #include"Hulk/Core/DDSTextureLoader.h"
+#include "Hulk/Core/WICTextureLoader.h"
 #include"Hulk/Core/FrameResource.h"
 #include"Hulk/Core/GameTimer.h"
 #include"Hulk/Core/GeometryGenerator.h"
@@ -15,4 +16,6 @@
 #include"Hulk/Core/d3dApp.h"
 #include"Hulk/Core/Log.h"
 #include "Hulk/Core/EntryPoint.h"
-#include "Waves.h"
+#include "../Waves.h"
+#include "hkpch.h"
+#include "Hulk/Core/ResourceUploadBatch.h"
